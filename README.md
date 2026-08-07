@@ -1,6 +1,6 @@
 # Field Surface Engine (FSE)
 
-**UUON Foundation Inc. — clouud Layer 11 — Skin / Perimeter Layer**
+**clouud Layer 11, Skin / Perimeter Layer**
 
 > Taylor series complex field driving Euclidean morphisms on a perspectively receding infinity tunnel. Per-wall bevel, shadow, pivot blind, and checkerboard physics. UUONBridge port layer for audio, MIDI, WebSocket, and Roblox connectivity.
 
