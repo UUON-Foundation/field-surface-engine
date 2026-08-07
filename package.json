@@ -1,0 +1,45 @@
+{
+  "name": "@uuon-foundation/field-surface-engine",
+  "version": "1.0.0",
+  "description": "Field Surface Engine — clouud Layer 11, Skin/Perimeter. Taylor series complex field driving Euclidean morphisms on a perspectively receding infinity tunnel. Per-wall physics. UUONBridge port layer for audio, MIDI, WebSocket, and Roblox integration.",
+  "main": "api/seed.js",
+  "browser": "index.html",
+  "files": [
+    "index.html",
+    "api/",
+    "LICENSE",
+    "NOTICE",
+    "ACADEMIC-RECORD.md",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "npx serve . -l 8080",
+    "test": "echo 'No test suite yet'"
+  },
+  "keywords": [
+    "uuon",
+    "field-surface",
+    "taylor-series",
+    "euclidean",
+    "infinity-tunnel",
+    "canvas",
+    "visualization",
+    "mathematical-engine",
+    "clouud",
+    "biological-architecture"
+  ],
+  "author": "Phillip Aguilar Ruiz III <phi1@uuonfoundation.com> (https://uuon.world)",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UUON-Foundation/field-surface-engine.git"
+  },
+  "homepage": "https://uuon-foundation.github.io/field-surface-engine/",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
