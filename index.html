@@ -3,1246 +3,690 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>UUON — Taylor Euclidean Infinity Engine v8</title>
+<title>UUON — Field Surface Engine v4</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
-/* ── RESET ── */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Share Tech Mono', monospace; }
-
-/* ── CANVAS ── */
-#wrap { position: fixed; top: 36px; left: 0; right: 0; bottom: 0; }
-canvas { display: block; width: 100%; height: 100%; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+#wrap{position:fixed;inset:0;}
+canvas{display:block;width:100%;height:100%;}
 
 /* ── HEADER ── */
-#header {
-  position: fixed; top: 0; left: 0; right: 0; height: 36px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 14px; gap: 10px; z-index: 30;
-  background: rgba(0,0,0,0.88);
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+#header{
+  position:fixed;top:0;left:0;right:0;height:38px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;
+  background:rgba(0,0,0,0.94);
+  border-bottom:1px solid rgba(255,255,255,0.12);
+  z-index:30;font-family:'Share Tech Mono',monospace;gap:12px;
 }
-.brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.logo {
-  width: 22px; height: 22px;
-  border: 1.5px solid rgba(255,255,255,0.55);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: #fff;
-}
-.wordmark { font-size: 12px; letter-spacing: 0.22em; color: #fff; }
-.sub { font-size: 7px; letter-spacing: 0.16em; color: rgba(255,255,255,0.3); }
-.hud { flex: 1; text-align: center; font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.07em; }
-.hud b { color: #fff; }
-.hud-r { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.brand{display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.logo{width:24px;height:24px;border:1.5px solid rgba(255,255,255,0.55);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+.wordmark{font-size:13px;letter-spacing:0.24em;color:#fff;}
+.sub{font-size:7px;letter-spacing:0.18em;color:rgba(255,255,255,0.28);}
+.hud{flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.08em;}
+.hud b{color:#fff;}
+.hud-r{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.tog-wrap{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;}
+.tog-track{width:30px;height:15px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);position:relative;background:transparent;flex-shrink:0;transition:background .18s;}
+.tog-thumb{width:9px;height:9px;border-radius:50%;position:absolute;top:2px;left:2px;transition:all .18s;background:#fff;}
+.tog-lbl{color:rgba(255,255,255,0.4);font-size:9px;}
+.hbtn{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 7px;background:transparent;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.45);cursor:pointer;}
+.hbtn:hover{border-color:#fff;color:#fff;}
 
-/* ── TOGGLE ── */
-.tog-wrap { display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; }
-.tog-track {
-  width: 30px; height: 16px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.3);
-  position: relative; background: transparent; flex-shrink: 0; transition: background .18s;
-}
-.tog-thumb {
-  width: 10px; height: 10px; border-radius: 50%;
-  position: absolute; top: 2px; left: 2px;
-  transition: all .18s; background: #fff;
-}
-.tog-lbl { color: rgba(255,255,255,0.4); font-size: 9px; }
-
-/* ── BUTTONS ── */
-.btn {
-  font-family: 'Share Tech Mono', monospace; font-size: 9px;
-  padding: 3px 9px; background: transparent; cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.22); color: rgba(255,255,255,0.55);
-  transition: all .12s; white-space: nowrap; border-radius: 2px;
-}
-.btn:hover { border-color: #fff; color: #fff; }
-.btn.gold { border-color: rgba(255,215,0,0.5); color: rgba(255,215,0,0.8); }
-.btn.gold:hover { border-color: #ffd700; color: #ffd700; }
-.btn.bright { border-color: rgba(255,255,255,0.4); color: #fff; }
-
-/* ── BOTTOM CHROME ── */
-#bottom {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
-  display: flex; flex-direction: column;
+/* ── CONTROL PANEL ── */
+#panel{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,0.95);
+  border-top:1px solid rgba(255,255,255,0.12);
+  z-index:30;font-family:'Share Tech Mono',monospace;
+  padding:6px 0 7px;
 }
 
-/* ANIM BAR */
-#animBar {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  padding: 5px 16px 5px;
-  background: rgba(0,0,0,0.9);
-  border-top: 1px solid rgba(255,255,255,0.1);
+/* Each row */
+.prow{
+  display:grid;
+  grid-template-columns: 90px repeat(6, 1fr) 100px;
+  align-items:center;
+  padding:3px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  gap:0 6px;
+  min-height:32px;
 }
-.actl { font-size: 8px; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); }
-#animBar input[type=range] {
-  width: 110px; height: 4px; cursor: pointer;
-  -webkit-appearance: none; appearance: none;
-  background: rgba(255,255,255,0.18); border-radius: 2px;
-}
-#animBar input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 13px; height: 13px;
-  border-radius: 50%; background: #fff; cursor: pointer;
-}
-#animBar b { color: #fff; font-size: 10px; min-width: 32px; display: inline-block; }
+.prow:last-child{border-bottom:none;}
 
-/* CONTROL PANEL */
-#ctrlPanel {
-  background: rgba(0,0,0,0.9);
-  border-top: 1px solid rgba(255,255,255,0.14);
-  padding: 10px 20px 12px;
-  min-height: 68px;
+/* Row label — wall name */
+.row-lbl{
+  font-size:11px;font-weight:700;letter-spacing:0.14em;
+  padding:2px 6px;text-align:center;border-radius:2px;
+  line-height:1;
 }
-.ctrl-row {
-  display: none;
-  grid-template-columns: repeat(7,1fr);
-  gap: 0 28px;
-  align-items: end;
-}
-.ctrl-row.visible { display: grid; }
-#rowCore { grid-template-columns: repeat(6,1fr) auto; }
+.lbl-core{color:#fff;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);}
+.lbl-top {color:#00e5ff;background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.4);}
+.lbl-rgt {color:#ffd700;background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.4);}
+.lbl-btm {color:#ff6b6b;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.4);}
+.lbl-lft {color:#a8ff78;background:rgba(168,255,120,0.1);border:1px solid rgba(168,255,120,0.4);}
 
-/* Control cell */
-.cc { display: flex; flex-direction: column; gap: 4px; }
-.cc-lbl {
-  font-size: 8px; letter-spacing: 0.07em; text-transform: uppercase;
-  color: rgba(255,255,255,0.4); white-space: nowrap;
+/* Slider cell */
+.sc{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0;}
+.sc .name{font-size:7.5px;letter-spacing:0.07em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1px;}
+.sc .bot{display:flex;align-items:center;gap:3px;}
+.sc input[type=range]{
+  flex:1;height:3px;min-width:0;
+  -webkit-appearance:none;appearance:none;
+  border-radius:2px;cursor:pointer;background:rgba(255,255,255,0.15);
 }
-.cc-bot { display: flex; align-items: center; gap: 8px; }
-.cc-bot input[type=range] {
-  flex: 1; height: 4px; cursor: pointer;
-  -webkit-appearance: none; appearance: none;
-  background: rgba(255,255,255,0.15); border-radius: 2px;
+.sc input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:11px;height:11px;border-radius:50%;cursor:pointer;
 }
-.cc-bot input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 14px; height: 14px;
-  border-radius: 50%; cursor: pointer; background: #fff;
-}
-.cc-bot input[type=range]::-moz-range-thumb {
-  width: 14px; height: 14px; border-radius: 50%; cursor: pointer;
-  border: none; background: #fff;
-}
-.cc-val {
-  font-size: 11px; font-weight: 700;
-  min-width: 34px; text-align: right; color: #fff;
-}
+.sc input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;cursor:pointer;border:none;}
+.sc .val{font-size:9px;min-width:32px;text-align:right;font-weight:700;flex-shrink:0;}
 
-/* Wall color theming — applied via data-wall attribute */
-[data-wall="top"] .cc-lbl { color: rgba(0,229,255,0.65); }
-[data-wall="top"] .cc-val { color: #00e5ff; }
-[data-wall="top"] input[type=range] { background: rgba(0,229,255,0.15); }
-[data-wall="top"] input[type=range]::-webkit-slider-thumb { background: #00e5ff; }
+/* Per-wall color theming on sliders */
+.core-c .name{color:rgba(255,255,255,0.55);}
+.core-c .val{color:#fff;}
+.core-c input[type=range]::-webkit-slider-thumb{background:#fff;}
+.core-c input[type=range]{background:rgba(255,255,255,0.18);}
 
-[data-wall="rgt"] .cc-lbl { color: rgba(255,215,0,0.65); }
-[data-wall="rgt"] .cc-val { color: #ffd700; }
-[data-wall="rgt"] input[type=range] { background: rgba(255,215,0,0.15); }
-[data-wall="rgt"] input[type=range]::-webkit-slider-thumb { background: #ffd700; }
+.top-c .name{color:rgba(0,229,255,0.7);}
+.top-c .val{color:#00e5ff;}
+.top-c input[type=range]::-webkit-slider-thumb{background:#00e5ff;}
+.top-c input[type=range]{background:rgba(0,229,255,0.15);}
 
-[data-wall="btm"] .cc-lbl { color: rgba(255,107,107,0.65); }
-[data-wall="btm"] .cc-val { color: #ff6b6b; }
-[data-wall="btm"] input[type=range] { background: rgba(255,107,107,0.15); }
-[data-wall="btm"] input[type=range]::-webkit-slider-thumb { background: #ff6b6b; }
+.rgt-c .name{color:rgba(255,215,0,0.7);}
+.rgt-c .val{color:#ffd700;}
+.rgt-c input[type=range]::-webkit-slider-thumb{background:#ffd700;}
+.rgt-c input[type=range]{background:rgba(255,215,0,0.15);}
 
-[data-wall="lft"] .cc-lbl { color: rgba(168,255,120,0.65); }
-[data-wall="lft"] .cc-val { color: #a8ff78; }
-[data-wall="lft"] input[type=range] { background: rgba(168,255,120,0.15); }
-[data-wall="lft"] input[type=range]::-webkit-slider-thumb { background: #a8ff78; }
+.btm-c .name{color:rgba(255,107,107,0.7);}
+.btm-c .val{color:#ff6b6b;}
+.btm-c input[type=range]::-webkit-slider-thumb{background:#ff6b6b;}
+.btm-c input[type=range]{background:rgba(255,107,107,0.15);}
+
+.lft-c .name{color:rgba(168,255,120,0.7);}
+.lft-c .val{color:#a8ff78;}
+.lft-c input[type=range]::-webkit-slider-thumb{background:#a8ff78;}
+.lft-c input[type=range]{background:rgba(168,255,120,0.15);}
 
 /* Mode button */
-.mdbtn {
-  font-family: 'Share Tech Mono', monospace; font-size: 9px;
-  padding: 5px 10px; background: transparent;
-  border: 1px solid rgba(255,255,255,0.25); color: #fff;
-  cursor: pointer; align-self: end; margin-bottom: 1px;
-  line-height: 1.4; white-space: nowrap;
-}
-.mdbtn:hover { border-color: #fff; }
-.mdbtn b { display: block; font-size: 10px; letter-spacing: 0.06em; }
+.mdbtn{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 8px;background:transparent;border:1px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;}
+.mdbtn:hover{border-color:#fff;}
 
-/* TAB ROW */
-#tabRow {
-  display: flex; align-items: flex-end; flex-wrap: nowrap;
-  padding: 0 10px; gap: 3px; background: transparent;
-  overflow: visible;
-}
-.tab {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-  padding: 6px 18px 6px; cursor: pointer;
-  border: 1px solid transparent; border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  position: relative; bottom: -1px;
-  transition: all .15s; user-select: none;
-  background: rgba(255,255,255,0.05);
-  flex-shrink: 0;
-}
-/* Inactive tab colors — visible but clearly not selected */
-.tab[data-tab="core"] { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
-.tab[data-tab="top"]  { color: rgba(0,229,255,0.6);   border-color: rgba(0,229,255,0.2);    background: rgba(0,229,255,0.05); }
-.tab[data-tab="rgt"]  { color: rgba(255,215,0,0.6);   border-color: rgba(255,215,0,0.2);    background: rgba(255,215,0,0.05); }
-.tab[data-tab="btm"]  { color: rgba(255,107,107,0.6); border-color: rgba(255,107,107,0.2);  background: rgba(255,107,107,0.05); }
-.tab[data-tab="lft"]  { color: rgba(168,255,120,0.6); border-color: rgba(168,255,120,0.2);  background: rgba(168,255,120,0.05); }
-/* Active tab — full brightness, connected to panel */
-.tab.active[data-tab="core"] { color: #fff;     border-color: rgba(255,255,255,0.55); background: rgba(0,0,0,0.9); }
-.tab.active[data-tab="top"]  { color: #00e5ff;  border-color: rgba(0,229,255,0.7);    background: rgba(0,0,0,0.9); }
-.tab.active[data-tab="rgt"]  { color: #ffd700;  border-color: rgba(255,215,0,0.7);    background: rgba(0,0,0,0.9); }
-.tab.active[data-tab="btm"]  { color: #ff6b6b;  border-color: rgba(255,107,107,0.7);  background: rgba(0,0,0,0.9); }
-.tab.active[data-tab="lft"]  { color: #a8ff78;  border-color: rgba(168,255,120,0.7);  background: rgba(0,0,0,0.9); }
-
-.tab-spacer { flex: 1; }
-.tab-spacer { flex: 1; }
-.preset-zone { display: flex; align-items: center; gap: 6px; padding-bottom: 5px; flex-shrink: 0; }
-#presetName { font-size: 9px; letter-spacing: 0.09em; color: rgba(255,255,255,0.5); min-width: 120px; text-align: center; }
-
-/* INFO OVERLAY */
-#infoOverlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.96); z-index: 50;
-  flex-direction: column; align-items: center; justify-content: center; padding: 24px;
-}
-.info-box { max-width: 660px; width: 100%; border: 1px solid rgba(255,255,255,0.15); padding: 26px 30px; }
-.info-title { font-size: 12px; letter-spacing: 0.2em; color: #fff; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-.info-body { font-size: 10px; line-height: 1.9; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; }
-.info-body b { color: #fff; }
-.info-warn { color: #ff6b6b; font-size: 9px; margin-top: 14px; border-top: 1px solid rgba(255,107,107,0.25); padding-top: 10px; letter-spacing: 0.05em; }
-
-#wm { position: fixed; right: 8px; bottom: 95px; font-size: 7px; letter-spacing: 0.09em; color: rgba(255,255,255,0.04); z-index: 5; pointer-events: none; writing-mode: vertical-rl; }
-
-/* ── UI SCALE 200% ── */
-:root {
-  --ui-scale: 2;
-}
-#header {
-  height: 56px !important;
-  padding: 0 20px !important;
-}
-.wordmark { font-size: 20px !important; letter-spacing: 0.22em !important; }
-.sub { font-size: 11px !important; }
-.logo { width: 34px !important; height: 34px !important; font-size: 16px !important; }
-.hud { font-size: 14px !important; }
-.hud b { font-size: 14px !important; }
-.tog-track { width: 48px !important; height: 24px !important; border-radius: 12px !important; }
-.tog-thumb { width: 16px !important; height: 16px !important; top: 3px !important; left: 3px !important; }
-.tog-lbl { font-size: 13px !important; }
-.btn { font-size: 13px !important; padding: 5px 14px !important; }
-.tab { font-size: 15px !important; padding: 9px 24px 9px !important; }
-#animBar { padding: 8px 20px !important; gap: 16px !important; }
-.actl { font-size: 13px !important; }
-#animBar input[type=range] { width: 160px !important; height: 6px !important; }
-#animBar input[type=range]::-webkit-slider-thumb { width: 20px !important; height: 20px !important; }
-#animBar b { font-size: 15px !important; min-width: 48px !important; }
-#ctrlPanel { padding: 16px 28px 18px !important; min-height: 100px !important; }
-.cc-lbl { font-size: 12px !important; letter-spacing: 0.08em !important; }
-.cc-bot input[type=range] { height: 6px !important; }
-.cc-bot input[type=range]::-webkit-slider-thumb { width: 20px !important; height: 20px !important; }
-.cc-bot input[type=range]::-moz-range-thumb { width: 20px !important; height: 20px !important; }
-.cc-val { font-size: 16px !important; min-width: 48px !important; }
-.ctrl-row { gap: 0 32px !important; }
-.mdbtn { font-size: 13px !important; padding: 8px 14px !important; }
-.mdbtn b { font-size: 14px !important; }
-.preset-zone { gap: 10px !important; }
-#presetName { font-size: 13px !important; min-width: 160px !important; }
-#wrap { top: 56px !important; }
+#wm{position:fixed;right:10px;bottom:200px;font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:0.1em;color:rgba(255,255,255,0.05);z-index:5;pointer-events:none;writing-mode:vertical-rl;}
 </style>
 </head>
 <body>
-
 <div id="wrap"><canvas id="c"></canvas></div>
 
 <!-- HEADER -->
 <div id="header">
   <div class="brand">
     <div class="logo">☧</div>
-    <div>
-      <div class="wordmark">UUON</div>
-      <div class="sub">FOUNDATION INC. · KASSEL</div>
-    </div>
+    <div><div class="wordmark">UUON</div><div class="sub">FOUNDATION INC. · KASSEL</div></div>
   </div>
   <div class="hud">
-    TAYLOR-EUCLID-∞ v8 &nbsp;·&nbsp;
+    TAYLOR-EUCLID-∞ v4 &nbsp;·&nbsp;
     ORD <b id="hOrd">3</b> &nbsp;·&nbsp;
     t=<b id="hT">0.0</b> &nbsp;·&nbsp;
     oct=<b id="hOct">+++</b> &nbsp;·&nbsp;
+    blind=<b id="hBl">0°</b> &nbsp;·&nbsp;
     E=<b id="hE">1.00</b>
   </div>
   <div class="hud-r">
-    <label class="tog-wrap" id="bwToggle">
+    <label class="tog-wrap" onclick="toggleBW()">
       <div class="tog-track" id="togTr"><div class="tog-thumb" id="togTh"></div></div>
       <span class="tog-lbl" id="togLbl">B/W</span>
     </label>
-    <button class="btn" onclick="UI.showInfo()">INFO</button>
-    <button class="btn bright" onclick="UI.toggleFS()">[FS]</button>
+    <button class="hbtn" onclick="toggleFS()">[FS]</button>
   </div>
 </div>
 
-<!-- BOTTOM CHROME -->
-<div id="bottom">
+<!-- CONTROL PANEL — 5 rows -->
+<div id="panel">
 
-  <!-- TAB ROW — canvas edge, tabs open upward -->
-  <div id="tabRow">
-    <div class="tab active" data-tab="core" onclick="UI.selectTab('core')">CORE</div>
-    <div class="tab" data-tab="top"  onclick="UI.selectTab('top')">TOP</div>
-    <div class="tab" data-tab="rgt"  onclick="UI.selectTab('rgt')">RIGHT</div>
-    <div class="tab" data-tab="btm"  onclick="UI.selectTab('btm')">BOTTOM</div>
-    <div class="tab" data-tab="lft"  onclick="UI.selectTab('lft')">LEFT</div>
-    <div class="tab-spacer"></div>
-    <div class="preset-zone">
-      <button class="btn" onclick="Engine.prevPreset()">◀</button>
-      <button class="btn gold" onclick="Engine.randomPreset()">✦ RANDOM</button>
-      <span id="presetName">DEFAULT</span>
-      <button class="btn" onclick="Engine.nextPreset()">▶</button>
+  <!-- ROW 0: CORE -->
+  <div class="prow">
+    <span class="row-lbl lbl-core">CORE</span>
+    <div class="sc core-c">
+      <span class="name">TAYLOR ORDER</span>
+      <div class="bot"><input type="range" id="sO" min="0" max="9" step="1" value="3"><span class="val" id="vO">3</span></div>
+    </div>
+    <div class="sc core-c">
+      <span class="name">GRID DENSITY</span>
+      <div class="bot"><input type="range" id="sG" min="2" max="32" step="1" value="14"><span class="val" id="vG">14</span></div>
+    </div>
+    <div class="sc core-c">
+      <span class="name">RING COUNT</span>
+      <div class="bot"><input type="range" id="sR" min="4" max="60" step="1" value="32"><span class="val" id="vR">32</span></div>
+    </div>
+    <div class="sc core-c">
+      <span class="name">MORPH DEPTH</span>
+      <div class="bot"><input type="range" id="sM" min="0" max="1" step="0.01" value="0.40"><span class="val" id="vM">0.40</span></div>
+    </div>
+    <div class="sc core-c">
+      <span class="name">FLOW SPEED</span>
+      <div class="bot"><input type="range" id="sSp" min="0.1" max="20" step="0.1" value="4.0"><span class="val" id="vSp">4.0</span></div>
+    </div>
+    <div class="sc core-c">
+      <span class="name">MESH WEIGHT</span>
+      <div class="bot"><input type="range" id="sMw" min="0.05" max="1.0" step="0.01" value="0.85"><span class="val" id="vMw">0.85</span></div>
+    </div>
+    <button class="mdbtn" onclick="nextMode()">EUCLID: <b id="bMode">ROTATION</b></button>
+  </div>
+
+  <!-- ROW 1: TOP WALL -->
+  <div class="prow">
+    <span class="row-lbl lbl-top">TOP</span>
+    <div class="sc top-c">
+      <span class="name">SHIFT</span>
+      <div class="bot"><input type="range" id="sWT" min="-1" max="1" step="0.01" value="0"><span class="val" id="vWT">0.00</span></div>
+    </div>
+    <div class="sc top-c">
+      <span class="name">BEVEL</span>
+      <div class="bot"><input type="range" id="sBvT" min="0" max="1" step="0.01" value="0"><span class="val" id="vBvT">0.00</span></div>
+    </div>
+    <div class="sc top-c">
+      <span class="name">SHADOW</span>
+      <div class="bot"><input type="range" id="sShT" min="0" max="1" step="0.01" value="0"><span class="val" id="vShT">0.00</span></div>
+    </div>
+    <div class="sc top-c">
+      <span class="name">BLIND ANGLE</span>
+      <div class="bot"><input type="range" id="sBlT" min="0" max="90" step="0.5" value="0"><span class="val" id="vBlT">0.0°</span></div>
+    </div>
+    <div class="sc top-c">
+      <span class="name">BLIND SPEED</span>
+      <div class="bot"><input type="range" id="sBsT" min="0" max="20" step="0.1" value="0"><span class="val" id="vBsT">0.0</span></div>
+    </div>
+    <div class="sc top-c">
+      <span class="name">BLIND WIDTH</span>
+      <div class="bot"><input type="range" id="sBwT" min="1" max="40" step="0.5" value="8"><span class="val" id="vBwT">8.0</span></div>
+    </div>
+    <div class="sc top-c">
+      <span class="name">CHECKER</span>
+      <div class="bot"><input type="range" id="sCkT" min="0" max="20" step="0.1" value="0"><span class="val" id="vCkT">0.0</span></div>
     </div>
   </div>
 
-  <!-- ANIM BAR -->
-  <div id="animBar">
-    <span class="actl">ANIM</span>
-    <button class="btn" id="btnAnim" onclick="Engine.toggleAnim()">PAUSE</button>
-    <button class="btn" onclick="Engine.resetAll()">RESET</button>
-    <span class="actl">SPEED</span>
-    <input type="range" id="sAnimSpd" min="0.1" max="4" step="0.1" value="4.8">
-    <b id="vAnimSpd">4.8×</b>
+  <!-- ROW 2: RIGHT WALL -->
+  <div class="prow">
+    <span class="row-lbl lbl-rgt">RIGHT</span>
+    <div class="sc rgt-c">
+      <span class="name">SHIFT</span>
+      <div class="bot"><input type="range" id="sWR" min="-1" max="1" step="0.01" value="0"><span class="val" id="vWR">0.00</span></div>
+    </div>
+    <div class="sc rgt-c">
+      <span class="name">BEVEL</span>
+      <div class="bot"><input type="range" id="sBvR" min="0" max="1" step="0.01" value="0"><span class="val" id="vBvR">0.00</span></div>
+    </div>
+    <div class="sc rgt-c">
+      <span class="name">SHADOW</span>
+      <div class="bot"><input type="range" id="sShR" min="0" max="1" step="0.01" value="0"><span class="val" id="vShR">0.00</span></div>
+    </div>
+    <div class="sc rgt-c">
+      <span class="name">BLIND ANGLE</span>
+      <div class="bot"><input type="range" id="sBlR" min="0" max="90" step="0.5" value="0"><span class="val" id="vBlR">0.0°</span></div>
+    </div>
+    <div class="sc rgt-c">
+      <span class="name">BLIND SPEED</span>
+      <div class="bot"><input type="range" id="sBsR" min="0" max="20" step="0.1" value="0"><span class="val" id="vBsR">0.0</span></div>
+    </div>
+    <div class="sc rgt-c">
+      <span class="name">BLIND WIDTH</span>
+      <div class="bot"><input type="range" id="sBwR" min="1" max="40" step="0.5" value="8"><span class="val" id="vBwR">8.0</span></div>
+    </div>
+    <div class="sc rgt-c">
+      <span class="name">CHECKER</span>
+      <div class="bot"><input type="range" id="sCkR" min="0" max="20" step="0.1" value="0"><span class="val" id="vCkR">0.0</span></div>
+    </div>
   </div>
 
-  <!-- CONTROL PANEL -->
-  <div id="ctrlPanel">
-
-    <!-- CORE -->
-    <div class="ctrl-row visible" id="rowCore">
-      <div class="cc">
-        <span class="cc-lbl" style="color:rgba(255,255,255,0.4)">TAYLOR ORDER</span>
-        <div class="cc-bot"><input type="range" id="sO" min="0" max="9" step="1" value="3" style="background:rgba(255,255,255,0.15)"><span class="cc-val" id="vO">3</span></div>
-      </div>
-      <div class="cc">
-        <span class="cc-lbl" style="color:rgba(255,255,255,0.4)">GRID DENSITY</span>
-        <div class="cc-bot"><input type="range" id="sG" min="2" max="32" step="1" value="14" style="background:rgba(255,255,255,0.15)"><span class="cc-val" id="vG">14</span></div>
-      </div>
-      <div class="cc">
-        <span class="cc-lbl" style="color:rgba(255,255,255,0.4)">RING COUNT</span>
-        <div class="cc-bot"><input type="range" id="sR" min="4" max="60" step="1" value="32" style="background:rgba(255,255,255,0.15)"><span class="cc-val" id="vR">32</span></div>
-      </div>
-      <div class="cc">
-        <span class="cc-lbl" style="color:rgba(255,255,255,0.4)">MORPH DEPTH</span>
-        <div class="cc-bot"><input type="range" id="sM" min="0" max="1" step="0.01" value="1.00" style="background:rgba(255,255,255,0.15)"><span class="cc-val" id="vM">1.00</span></div>
-      </div>
-      <div class="cc">
-        <span class="cc-lbl" style="color:rgba(255,255,255,0.4)">FLOW SPEED</span>
-        <div class="cc-bot"><input type="range" id="sSp" min="0.1" max="20" step="0.1" value="20.0" style="background:rgba(255,255,255,0.15)"><span class="cc-val" id="vSp">20.0</span></div>
-      </div>
-      <div class="cc">
-        <span class="cc-lbl" style="color:rgba(255,255,255,0.4)">MESH WEIGHT</span>
-        <div class="cc-bot"><input type="range" id="sMw" min="0.05" max="1.0" step="0.01" value="1.00" style="background:rgba(255,255,255,0.15)"><span class="cc-val" id="vMw">1.00</span></div>
-      </div>
-      <button class="mdbtn" onclick="Engine.nextMode()">EUCLID<b id="bMode">ROTATION</b></button>
+  <!-- ROW 3: BOTTOM WALL -->
+  <div class="prow">
+    <span class="row-lbl lbl-btm">BOTTOM</span>
+    <div class="sc btm-c">
+      <span class="name">SHIFT</span>
+      <div class="bot"><input type="range" id="sWB" min="-1" max="1" step="0.01" value="0"><span class="val" id="vWB">0.00</span></div>
     </div>
-
-    <!-- TOP -->
-    <div class="ctrl-row" id="rowTop" data-wall="top">
-      <div class="cc"><span class="cc-lbl">SHIFT</span><div class="cc-bot"><input type="range" id="sWT" min="-10" max="10" step="1" value="0"><span class="cc-val" id="vWT">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BEVEL</span><div class="cc-bot"><input type="range" id="sBvT" min="0" max="30" step="1" value="0"><span class="cc-val" id="vBvT">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">SHADOW</span><div class="cc-bot"><input type="range" id="sShT" min="0" max="20" step="1" value="0"><span class="cc-val" id="vShT">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND ANGLE</span><div class="cc-bot"><input type="range" id="sBlT" min="0" max="90" step="1" value="0"><span class="cc-val" id="vBlT">0°</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND SPEED</span><div class="cc-bot"><input type="range" id="sBsT" min="0" max="20" step="1" value="0"><span class="cc-val" id="vBsT">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND WIDTH</span><div class="cc-bot"><input type="range" id="sBwT" min="1" max="80" step="1" value="8"><span class="cc-val" id="vBwT">8</span></div></div>
-      <div class="cc"><span class="cc-lbl">CHECKER</span><div class="cc-bot"><input type="range" id="sCkT" min="0" max="20" step="1" value="0"><span class="cc-val" id="vCkT">0</span></div></div>
+    <div class="sc btm-c">
+      <span class="name">BEVEL</span>
+      <div class="bot"><input type="range" id="sBvB" min="0" max="1" step="0.01" value="0"><span class="val" id="vBvB">0.00</span></div>
     </div>
-
-    <!-- RIGHT -->
-    <div class="ctrl-row" id="rowRgt" data-wall="rgt">
-      <div class="cc"><span class="cc-lbl">SHIFT</span><div class="cc-bot"><input type="range" id="sWR" min="-10" max="10" step="1" value="0"><span class="cc-val" id="vWR">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BEVEL</span><div class="cc-bot"><input type="range" id="sBvR" min="0" max="30" step="1" value="0"><span class="cc-val" id="vBvR">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">SHADOW</span><div class="cc-bot"><input type="range" id="sShR" min="0" max="20" step="1" value="0"><span class="cc-val" id="vShR">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND ANGLE</span><div class="cc-bot"><input type="range" id="sBlR" min="0" max="90" step="1" value="0"><span class="cc-val" id="vBlR">0°</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND SPEED</span><div class="cc-bot"><input type="range" id="sBsR" min="0" max="20" step="1" value="0"><span class="cc-val" id="vBsR">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND WIDTH</span><div class="cc-bot"><input type="range" id="sBwR" min="1" max="80" step="1" value="8"><span class="cc-val" id="vBwR">8</span></div></div>
-      <div class="cc"><span class="cc-lbl">CHECKER</span><div class="cc-bot"><input type="range" id="sCkR" min="0" max="20" step="1" value="0"><span class="cc-val" id="vCkR">0</span></div></div>
+    <div class="sc btm-c">
+      <span class="name">SHADOW</span>
+      <div class="bot"><input type="range" id="sShB" min="0" max="1" step="0.01" value="0"><span class="val" id="vShB">0.00</span></div>
     </div>
-
-    <!-- BOTTOM -->
-    <div class="ctrl-row" id="rowBtm" data-wall="btm">
-      <div class="cc"><span class="cc-lbl">SHIFT</span><div class="cc-bot"><input type="range" id="sWB" min="-10" max="10" step="1" value="0"><span class="cc-val" id="vWB">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BEVEL</span><div class="cc-bot"><input type="range" id="sBvB" min="0" max="30" step="1" value="0"><span class="cc-val" id="vBvB">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">SHADOW</span><div class="cc-bot"><input type="range" id="sShB" min="0" max="20" step="1" value="0"><span class="cc-val" id="vShB">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND ANGLE</span><div class="cc-bot"><input type="range" id="sBlB" min="0" max="90" step="1" value="0"><span class="cc-val" id="vBlB">0°</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND SPEED</span><div class="cc-bot"><input type="range" id="sBsB" min="0" max="20" step="1" value="0"><span class="cc-val" id="vBsB">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND WIDTH</span><div class="cc-bot"><input type="range" id="sBwB" min="1" max="80" step="1" value="8"><span class="cc-val" id="vBwB">8</span></div></div>
-      <div class="cc"><span class="cc-lbl">CHECKER</span><div class="cc-bot"><input type="range" id="sCkB" min="0" max="20" step="1" value="0"><span class="cc-val" id="vCkB">0</span></div></div>
+    <div class="sc btm-c">
+      <span class="name">BLIND ANGLE</span>
+      <div class="bot"><input type="range" id="sBlB" min="0" max="90" step="0.5" value="0"><span class="val" id="vBlB">0.0°</span></div>
     </div>
-
-    <!-- LEFT -->
-    <div class="ctrl-row" id="rowLft" data-wall="lft">
-      <div class="cc"><span class="cc-lbl">SHIFT</span><div class="cc-bot"><input type="range" id="sWL" min="-10" max="10" step="1" value="0"><span class="cc-val" id="vWL">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BEVEL</span><div class="cc-bot"><input type="range" id="sBvL" min="0" max="30" step="1" value="0"><span class="cc-val" id="vBvL">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">SHADOW</span><div class="cc-bot"><input type="range" id="sShL" min="0" max="20" step="1" value="0"><span class="cc-val" id="vShL">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND ANGLE</span><div class="cc-bot"><input type="range" id="sBlL" min="0" max="90" step="1" value="0"><span class="cc-val" id="vBlL">0°</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND SPEED</span><div class="cc-bot"><input type="range" id="sBsL" min="0" max="20" step="1" value="0"><span class="cc-val" id="vBsL">0</span></div></div>
-      <div class="cc"><span class="cc-lbl">BLIND WIDTH</span><div class="cc-bot"><input type="range" id="sBwL" min="1" max="80" step="1" value="8"><span class="cc-val" id="vBwL">8</span></div></div>
-      <div class="cc"><span class="cc-lbl">CHECKER</span><div class="cc-bot"><input type="range" id="sCkL" min="0" max="20" step="1" value="0"><span class="cc-val" id="vCkL">0</span></div></div>
+    <div class="sc btm-c">
+      <span class="name">BLIND SPEED</span>
+      <div class="bot"><input type="range" id="sBsB" min="0" max="20" step="0.1" value="0"><span class="val" id="vBsB">0.0</span></div>
     </div>
-
-  </div><!-- end ctrlPanel -->
-
-  <!-- TAB ROW -->
-
-
-</div><!-- end bottom -->
-
-<!-- INFO OVERLAY -->
-<div id="infoOverlay">
-  <div class="info-box">
-    <div class="info-title">☧ UUON FOUNDATION — TAYLOR-EUCLID-∞ ENGINE v8</div>
-    <div class="info-body">
-      <b>Designer / Principal Investigator</b><br>
-      Phillip Aguilar Ruiz III · Founder, UUON Foundation Inc.<br>
-      Kassel, Germany · phi1@uuonfoundation.com<br><br>
-      <b>System architecture</b><br>
-      Taylor series e^z in the complex plane, evaluated per surface point, drives Euclidean geometric morphisms applied independently to four walls of a perspectively receding infinity tunnel. Each wall carries: shift, bevel, shadow, pivot blinds, and checkerboard — all from the same mathematical framework.<br><br>
-      <b>Five Euclidean transform modes</b><br>
-      ROTATION · REFLECTION · SHEAR · INVERSION (Möbius / Smith Chart) · SPIRAL<br><br>
-      <b>Presets</b><br>
-      DEFAULT · BEVEL STAGGER · BLIND STORM · CHECKER PULSE · INVERSION VORTEX · SPIRAL WEAVE · SHEAR GRID · DEEP FOLD · REFLECTION GHOST · FULL CHAOS<br><br>
-      <b>v8 — clean rebuild</b><br>
-      Single clean source. No obfuscation in working file. Unified Engine/UI namespace. Single applyTheme function. Cache-invalidation on parameter change. Tab UI with per-wall colour identity.<br>
-      <div class="info-warn">
-        © 2026 UUON FOUNDATION INC. ALL RIGHTS RESERVED.<br>
-        NOT FOR COMMERCIAL USE · REVERSE ENGINEERING PROHIBITED<br>
-        Original research — Phillip Aguilar Ruiz III / UUON Foundation Inc.<br>
-        Translation layer: Claude (Anthropic)
-      </div>
+    <div class="sc btm-c">
+      <span class="name">BLIND WIDTH</span>
+      <div class="bot"><input type="range" id="sBwB" min="1" max="40" step="0.5" value="8"><span class="val" id="vBwB">8.0</span></div>
     </div>
-    <button class="btn bright" style="margin-top:14px" onclick="UI.hideInfo()">CLOSE</button>
+    <div class="sc btm-c">
+      <span class="name">CHECKER</span>
+      <div class="bot"><input type="range" id="sCkB" min="0" max="20" step="0.1" value="0"><span class="val" id="vCkB">0.0</span></div>
+    </div>
   </div>
+
+  <!-- ROW 4: LEFT WALL -->
+  <div class="prow">
+    <span class="row-lbl lbl-lft">LEFT</span>
+    <div class="sc lft-c">
+      <span class="name">SHIFT</span>
+      <div class="bot"><input type="range" id="sWL" min="-1" max="1" step="0.01" value="0"><span class="val" id="vWL">0.00</span></div>
+    </div>
+    <div class="sc lft-c">
+      <span class="name">BEVEL</span>
+      <div class="bot"><input type="range" id="sBvL" min="0" max="1" step="0.01" value="0"><span class="val" id="vBvL">0.00</span></div>
+    </div>
+    <div class="sc lft-c">
+      <span class="name">SHADOW</span>
+      <div class="bot"><input type="range" id="sShL" min="0" max="1" step="0.01" value="0"><span class="val" id="vShL">0.00</span></div>
+    </div>
+    <div class="sc lft-c">
+      <span class="name">BLIND ANGLE</span>
+      <div class="bot"><input type="range" id="sBlL" min="0" max="90" step="0.5" value="0"><span class="val" id="vBlL">0.0°</span></div>
+    </div>
+    <div class="sc lft-c">
+      <span class="name">BLIND SPEED</span>
+      <div class="bot"><input type="range" id="sBsL" min="0" max="20" step="0.1" value="0"><span class="val" id="vBsL">0.0</span></div>
+    </div>
+    <div class="sc lft-c">
+      <span class="name">BLIND WIDTH</span>
+      <div class="bot"><input type="range" id="sBwL" min="1" max="40" step="0.5" value="8"><span class="val" id="vBwL">8.0</span></div>
+    </div>
+    <div class="sc lft-c">
+      <span class="name">CHECKER</span>
+      <div class="bot"><input type="range" id="sCkL" min="0" max="20" step="0.1" value="0"><span class="val" id="vCkL">0.0</span></div>
+    </div>
+  </div>
+
 </div>
 
-<div id="wm">UUON FOUNDATION INC. · PHI AGUILAR RUIZ III · TAYLOR-EUCLID-∞ v8</div>
+<div id="wm">UUON FOUNDATION INC. · PHI AGUILAR RUIZ III · TAYLOR-EUCLID-∞ v4</div>
 
 <script>
-'use strict';
+const cv=document.getElementById('c');
+const cx=cv.getContext('2d');
+let W,H;
+function rsz(){
+  W=cv.width=cv.offsetWidth||window.innerWidth;
+  H=cv.height=cv.offsetHeight||window.innerHeight;
+}
+rsz();window.addEventListener('resize',rsz);
 
-/* ============================================================
-   UUON FOUNDATION INC. — TAYLOR-EUCLID-∞ ENGINE v8
-   © 2026 All rights reserved. Not for commercial use.
-   Clean source — single namespace, no obfuscation.
-   ============================================================ */
+/* State */
+let tayN=3,gridN=14,rings=32,morph=0.40,spd=4.0,meshW=0.85,modeIdx=0;
+const modes=['ROTATION','REFLECTION','SHEAR','INVERSION','SPIRAL'];
 
-/* ── STATE ── */
-const State = {
-  t: 0,
-  animating: true,
-  spdMult: 4.8,
-  bwMode: false,
-  tiltX: 0.15, tiltY: -0.08,
-  tTX: 0.15,   tTY: -0.08,
-  drag: false,  lx: 0, ly: 0,
+/* Per-wall state */
+const W0={shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}; // TOP
+const W1={shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}; // RIGHT
+const W2={shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}; // BOTTOM
+const W3={shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}; // LEFT
+const walls=[W0,W1,W2,W3];
 
-  // Core params
-  tayN:   3,
-  gridN:  14,
-  rings:  32,
-  morph:  1.00,
-  spd:    20.0,
-  meshW:  1.00,
-  modeIdx: 0,
+let bwMode=false;
+let t=0,tiltX=0.15,tiltY=-0.08,tTX=0.15,tTY=-0.08;
+let drag=false,lx=0,ly=0;
 
-  // Per-wall: [top, right, bottom, left]
-  walls: [
-    { shift:0, bevel:0, shadow:0, blindAng:0, blindSpd:0, blindW:8, checker:0 },
-    { shift:0, bevel:0, shadow:0, blindAng:0, blindSpd:0, blindW:8, checker:0 },
-    { shift:0, bevel:0, shadow:0, blindAng:0, blindSpd:0, blindW:8, checker:0 },
-    { shift:0, bevel:0, shadow:0, blindAng:0, blindSpd:0, blindW:8, checker:0 }
-  ]
-};
+/* Bind helper */
+function b(id,fn,vid,fmt){
+  const el=document.getElementById(id);
+  el.oninput=()=>{
+    const v=parseFloat(el.value);
+    fn(v);
+    document.getElementById(vid).textContent=fmt?fmt(v):v;
+  };
+}
 
-const MODES = ['ROTATION','REFLECTION','SHEAR','INVERSION','SPIRAL'];
+/* CORE binds */
+b('sO', v=>tayN=Math.round(v),   'vO', v=>Math.round(v));
+b('sG', v=>gridN=Math.round(v),  'vG', v=>Math.round(v));
+b('sR', v=>rings=Math.round(v),  'vR', v=>Math.round(v));
+b('sM', v=>morph=v,              'vM', v=>v.toFixed(2));
+b('sSp',v=>spd=v,               'vSp',v=>v.toFixed(1));
+b('sMw',v=>meshW=v,             'vMw',v=>v.toFixed(2));
 
-/* ── GEOMETRY CACHES ── */
-const Cache = {
-  rr: [],    rrValid: false,
-  wo: [[],[],[],[]], woValid: false,
-  lastW: 0, lastH: 0, lastTX: 0, lastTY: 0, lastRings: 0,
+/* Wall binds — TOP */
+b('sWT', v=>W0.shift=v,     'vWT', v=>v.toFixed(2));
+b('sBvT',v=>W0.bevel=v,     'vBvT',v=>v.toFixed(2));
+b('sShT',v=>W0.shadow=v,    'vShT',v=>v.toFixed(2));
+b('sBlT',v=>W0.blindAng=v,  'vBlT',v=>v.toFixed(1)+'°');
+b('sBsT',v=>W0.blindSpd=v,  'vBsT',v=>v.toFixed(1));
+b('sBwT',v=>W0.blindW=v,    'vBwT',v=>v.toFixed(1));
+b('sCkT',v=>W0.checker=v,   'vCkT',v=>v.toFixed(1));
+/* RIGHT */
+b('sWR', v=>W1.shift=v,     'vWR', v=>v.toFixed(2));
+b('sBvR',v=>W1.bevel=v,     'vBvR',v=>v.toFixed(2));
+b('sShR',v=>W1.shadow=v,    'vShR',v=>v.toFixed(2));
+b('sBlR',v=>W1.blindAng=v,  'vBlR',v=>v.toFixed(1)+'°');
+b('sBsR',v=>W1.blindSpd=v,  'vBsR',v=>v.toFixed(1));
+b('sBwR',v=>W1.blindW=v,    'vBwR',v=>v.toFixed(1));
+b('sCkR',v=>W1.checker=v,   'vCkR',v=>v.toFixed(1));
+/* BOTTOM */
+b('sWB', v=>W2.shift=v,     'vWB', v=>v.toFixed(2));
+b('sBvB',v=>W2.bevel=v,     'vBvB',v=>v.toFixed(2));
+b('sShB',v=>W2.shadow=v,    'vShB',v=>v.toFixed(2));
+b('sBlB',v=>W2.blindAng=v,  'vBlB',v=>v.toFixed(1)+'°');
+b('sBsB',v=>W2.blindSpd=v,  'vBsB',v=>v.toFixed(1));
+b('sBwB',v=>W2.blindW=v,    'vBwB',v=>v.toFixed(1));
+b('sCkB',v=>W2.checker=v,   'vCkB',v=>v.toFixed(1));
+/* LEFT */
+b('sWL', v=>W3.shift=v,     'vWL', v=>v.toFixed(2));
+b('sBvL',v=>W3.bevel=v,     'vBvL',v=>v.toFixed(2));
+b('sShL',v=>W3.shadow=v,    'vShL',v=>v.toFixed(2));
+b('sBlL',v=>W3.blindAng=v,  'vBlL',v=>v.toFixed(1)+'°');
+b('sBsL',v=>W3.blindSpd=v,  'vBsL',v=>v.toFixed(1));
+b('sBwL',v=>W3.blindW=v,    'vBwL',v=>v.toFixed(1));
+b('sCkL',v=>W3.checker=v,   'vCkL',v=>v.toFixed(1));
 
-  invalidateRR() { this.rrValid = false; },
-  invalidateWO() { this.woValid = false; },
-  invalidateAll() { this.rrValid = false; this.woValid = false; },
+function nextMode(){modeIdx=(modeIdx+1)%modes.length;document.getElementById('bMode').textContent=modes[modeIdx];}
+function toggleFS(){
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+  else document.exitFullscreen&&document.exitFullscreen();
+}
+function toggleBW(){
+  bwMode=!bwMode;
+  const th=document.getElementById('togTh'),tr=document.getElementById('togTr'),lb=document.getElementById('togLbl');
+  tr.style.background=bwMode?'#fff':'transparent';
+  th.style.background=bwMode?'#000':'#fff';
+  th.style.left=bwMode?'19px':'2px';
+  lb.textContent=bwMode?'W/B':'B/W';
+  const panel=document.getElementById('panel'),hdr=document.getElementById('header');
+  const bg=bwMode?'rgba(255,255,255,0.96)':'rgba(0,0,0,0.95)';
+  const bor=bwMode?'rgba(0,0,0,0.12)':'rgba(255,255,255,0.12)';
+  panel.style.background=hdr.style.background=bg;
+  panel.style.borderTopColor=hdr.style.borderBottomColor=bor;
+  const c=bwMode?'rgba(0,0,0,':'rgba(255,255,255,';
+  document.querySelectorAll('.wordmark').forEach(e=>e.style.color=bwMode?'#000':'#fff');
+  document.querySelectorAll('.sub,.hud,.tog-lbl').forEach(e=>e.style.color=bwMode?'rgba(0,0,0,0.32)':'rgba(255,255,255,0.32)');
+  document.querySelectorAll('.hud b').forEach(e=>e.style.color=bwMode?'#000':'#fff');
+  document.querySelector('.logo').style.cssText+=`;border-color:${bwMode?'rgba(0,0,0,0.45)':'rgba(255,255,255,0.55)'};color:${bwMode?'#000':'#fff'}`;
+  document.querySelectorAll('.mdbtn,.hbtn').forEach(e=>{e.style.color=bwMode?'#000':'#fff';e.style.borderColor=bwMode?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.22)';});
+  document.getElementById('wm').style.color=bwMode?'rgba(0,0,0,0.05)':'rgba(255,255,255,0.05)';
+}
 
-  buildRR(W, H) {
-    this.rr = [];
-    const s = State;
-    for (let i = 0; i < s.rings; i++) this.rr.push(Math.rrCalc(i, W, H));
-    this.rrValid = true;
-    this.lastW = W; this.lastH = H;
-    this.lastTX = s.tiltX; this.lastTY = s.tiltY;
-    this.lastRings = s.rings;
-  },
+cv.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{if(drag){tTX+=(e.clientX-lx)*0.005;tTY+=(e.clientY-ly)*0.004;lx=e.clientX;ly=e.clientY;}});
+cv.addEventListener('touchstart',e=>{drag=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;},{passive:true});
+cv.addEventListener('touchend',()=>drag=false);
+cv.addEventListener('touchmove',e=>{if(drag){tTX+=(e.touches[0].clientX-lx)*0.005;tTY+=(e.touches[0].clientY-ly)*0.004;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}},{passive:true});
 
-  buildWO(W, H) {
-    for (let face = 0; face < 4; face++) {
-      this.wo[face] = [];
-      for (let fi = 0; fi < State.rings; fi++)
-        this.wo[face].push(Math.wallOffCalc(face, fi, W, H));
-    }
-    this.woValid = true;
+/* Taylor */
+const FC=[1];
+function fact(n){if(FC[n])return FC[n];FC[n]=n*fact(n-1);return FC[n];}
+function tayC(re,im,n){
+  let sr=0,si=0,pr=1,pi=0;
+  for(let k=0;k<=n;k++){
+    sr+=pr/fact(k);si+=pi/fact(k);
+    let nr=pr*re-pi*im,ni=pr*im+pi*re;pr=nr;pi=ni;
   }
-};
+  return{re:sr,im:si};
+}
 
-/* ── MATH ── */
-const Math2 = {
-  FC: [1],
-  fact(n) {
-    if (this.FC[n] !== undefined) return this.FC[n];
-    this.FC[n] = n * this.fact(n - 1);
-    return this.FC[n];
-  },
-
-  tayC(re, im, n) {
-    let sr = 0, si = 0, pr = 1, pi = 0;
-    for (let k = 0; k <= n; k++) {
-      sr += pr / this.fact(k);
-      si += pi / this.fact(k);
-      const nr = pr*re - pi*im;
-      const ni = pr*im + pi*re;
-      pr = nr; pi = ni;
-    }
-    return { re: sr, im: si };
-  },
-
-  euclidMorph(u, v, ti) {
-    const { morph: m, spd, spdMult, modeIdx } = State;
-    const ph = ti * spd * spdMult * 0.04;
-    let ou = u, ov = v;
-    if (modeIdx === 0) {
-      const r2 = Math.sqrt(u*u + v*v);
-      const th = ph * (0.5 + r2*0.8);
-      const co = Math.cos(th*m), si = Math.sin(th*m);
-      ou = u*co - v*si; ov = u*si + v*co;
-    } else if (modeIdx === 1) {
-      const ax = ph*0.7;
-      const co = Math.cos(2*ax), si = Math.sin(2*ax);
-      ou = u*(1-m) + (u*co + v*si)*m;
-      ov = v*(1-m) + (u*si - v*co)*m;
-    } else if (modeIdx === 2) {
-      const sh  = Math.sin(ph)*1.2*m;
-      const sh2 = Math.cos(ph*0.7)*0.8*m;
-      ou = u + v*sh; ov = v + u*sh2;
-    } else if (modeIdx === 3) {
-      const r2 = u*u + v*v + 0.01;
-      ou = u*(1-m) + (u/r2)*m;
-      ov = v*(1-m) + (v/r2)*m;
-    } else {
-      const r2 = Math.sqrt(u*u + v*v) + 0.01;
-      const th = ph*0.6 + r2*Math.PI*0.8*m;
-      const sc = 1 + Math.sin(r2*3 - ph)*0.3*m;
-      ou = (u*Math.cos(th) - v*Math.sin(th)) * sc;
-      ov = (u*Math.sin(th) + v*Math.cos(th)) * sc;
-    }
-    return { u: ou, v: ov };
-  },
-
-  tayDisplace(u, v, fi, W, H) {
-    const e = this.euclidMorph(u, v, State.t);
-    const r = this.tayC(
-      e.u*0.8 + 0.025*Math.sin(State.t*0.5 + fi*0.3),
-      e.v*0.8 + 0.025*Math.cos(State.t*0.4 + fi*0.25),
-      State.tayN
-    );
-    const w = 5 * (1 - fi/(State.rings-1)*0.8) * State.meshW;
-    return { du: (r.re-1)*w*0.14, dv: r.im*w*0.14 };
-  },
-
-  rrCalc(fi, W, H) {
-    const frac = Math.pow(fi / (State.rings-1), 0.74);
-    const ox = State.tiltX * W * 0.10 * (1-frac);
-    const oy = State.tiltY * H * 0.07 * (1-frac);
-    const hw = (W/2) * (1-frac);
-    const hh = (H/2) * (1-frac);
-    return { x: W/2+ox-hw, y: H/2+oy-hh, w: hw*2, h: hh*2, frac };
-  },
-
-  rr(fi) { return Cache.rr[fi]; },
-
-  wallOffCalc(face, fi, W, H) {
-    const wl = State.walls[face];
-    const dep = fi / (State.rings-1);
-    const taper = 1 - dep*0.88;
-    const stagger = wl.bevel * 3.5 * ((fi%2===0)?1:-1) * taper * dep;
-    if (face===0) return { ox: wl.shift*W*0.15*taper,                       oy: -Math.abs(wl.shift)*H*0.065*taper + stagger };
-    if (face===1) return { ox:  Math.abs(wl.shift)*W*0.065*taper + stagger, oy:  wl.shift*H*0.15*taper };
-    if (face===2) return { ox:  wl.shift*W*0.15*taper,                       oy:  Math.abs(wl.shift)*H*0.065*taper + stagger };
-    return              { ox: -Math.abs(wl.shift)*W*0.065*taper - stagger,  oy:  wl.shift*H*0.15*taper };
-  },
-
-  wo(face, fi) { return Cache.wo[face][fi]; },
-
-  facePoint(fi, gu, gv, face, W, H) {
-    const r0 = this.rr(fi), r1 = this.rr(fi+1);
-    const wo0 = this.wo(face, fi), wo1 = this.wo(face, fi+1);
-    let px0, py0, px1, py1;
-    if (face===0) {
-      px0=r0.x+gu*r0.w+wo0.ox; py0=r0.y+wo0.oy;
-      px1=r1.x+gu*r1.w+wo1.ox; py1=r1.y+wo1.oy;
-    } else if (face===1) {
-      px0=r0.x+r0.w+wo0.ox; py0=r0.y+gv*r0.h+wo0.oy;
-      px1=r1.x+r1.w+wo1.ox; py1=r1.y+gv*r1.h+wo1.oy;
-    } else if (face===2) {
-      px0=r0.x+gu*r0.w+wo0.ox; py0=r0.y+r0.h+wo0.oy;
-      px1=r1.x+gu*r1.w+wo1.ox; py1=r1.y+r1.h+wo1.oy;
-    } else {
-      px0=r0.x+wo0.ox; py0=r0.y+gv*r0.h+wo0.oy;
-      px1=r1.x+wo1.ox; py1=r1.y+gv*r1.h+wo1.oy;
-    }
-    const bpx = (px0+px1)/2, bpy = (py0+py1)/2;
-    const u = gu*2-1, v = gv*2-1;
-    const d = this.tayDisplace(u, v, fi, W, H);
-    let dpx, dpy;
-    if (face===0||face===2) { dpx=d.du*r0.w*0.07; dpy=d.dv*r0.h*0.05; }
-    else                    { dpx=d.du*r0.h*0.05; dpy=d.dv*r0.w*0.07; }
-    return { px: bpx+dpx, py: bpy+dpy, base: { px0, py0, px1, py1 } };
+function euclidMorph(u,v,ti){
+  const m=morph,ph=ti*spd*0.04;
+  let ou=u,ov=v;
+  if(modeIdx===0){
+    const r2=Math.sqrt(u*u+v*v),th=ph*(0.5+r2*0.8),co=Math.cos(th*m),si=Math.sin(th*m);
+    ou=u*co-v*si;ov=u*si+v*co;
+  } else if(modeIdx===1){
+    const ax=ph*0.7,co=Math.cos(2*ax),si=Math.sin(2*ax);
+    ou=u*(1-m)+(u*co+v*si)*m;ov=v*(1-m)+(u*si-v*co)*m;
+  } else if(modeIdx===2){
+    const sh=Math.sin(ph)*1.2*m,sh2=Math.cos(ph*0.7)*0.8*m;
+    ou=u+v*sh;ov=v+u*sh2;
+  } else if(modeIdx===3){
+    const r2=u*u+v*v+0.01;
+    ou=u*(1-m)+(u/r2)*m;ov=v*(1-m)+(v/r2)*m;
+  } else {
+    const r2=Math.sqrt(u*u+v*v)+0.01,th=ph*0.6+r2*Math.PI*0.8*m,sc=1+Math.sin(r2*3-ph)*0.3*m;
+    ou=(u*Math.cos(th)-v*Math.sin(th))*sc;ov=(u*Math.sin(th)+v*Math.cos(th))*sc;
   }
-};
-// Expose rrCalc/wallOffCalc on Math2 for Cache
-Math.rrCalc = Math2.rrCalc.bind(Math2);
-Math.wallOffCalc = Math2.wallOffCalc.bind(Math2);
+  return{u:ou,v:ov};
+}
 
-/* ── DRAW ── */
-const Draw = {
-  col(alpha, dim, bright) {
-    const a = Math.max(0, Math.min(1, alpha * (dim ? 0.14 : bright ? 1.0 : 0.9))).toFixed(2);
-    return State.bwMode ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a})`;
-  },
+function tayDisplace(u,v,fi){
+  const{u:eu,v:ev}=euclidMorph(u,v,t);
+  const r=tayC(eu*0.8+0.025*Math.sin(t*0.5+fi*0.3),ev*0.8+0.025*Math.cos(t*0.4+fi*0.25),tayN);
+  const w=5*(1-fi/(rings-1)*0.8)*meshW;
+  return{du:(r.re-1)*w*0.14,dv:r.im*w*0.14,eu,ev};
+}
 
-  isChecker(gi, fi, face) {
-    const ck = State.walls[face].checker;
-    if (ck < 0.5) return false;
-    const ph = Math.floor(State.t * ck * 0.06 + fi * 0.4);
-    return ((Math.floor(gi/4) + ph + face) % 2 === 0);
-  },
+/* Wall offset per face using that wall's shift + bevel stagger */
+function wallOff(face,fi){
+  const wl=walls[face];
+  const dep=fi/(rings-1);
+  const taper=1-dep*0.88;
+  const stagger=wl.bevel*3.5*((fi%2===0)?1:-1)*taper*dep;
+  if(face===0)return{ox:wl.shift*W*0.15*taper,    oy:-Math.abs(wl.shift)*H*0.065*taper+stagger};
+  if(face===1)return{ox: Math.abs(wl.shift)*W*0.065*taper+stagger,oy:wl.shift*H*0.15*taper};
+  if(face===2)return{ox:wl.shift*W*0.15*taper,     oy: Math.abs(wl.shift)*H*0.065*taper+stagger};
+  return            {ox:-Math.abs(wl.shift)*W*0.065*taper-stagger,oy:wl.shift*H*0.15*taper};
+}
 
-  blinds(fi, face, cx, W, H) {
-    const wl = State.walls[face];
-    if (wl.blindAng < 0.5 && wl.blindSpd < 0.5) return;
-    const r0 = Math2.rr(fi);
-    const depth = 1 - r0.frac;
-    if (depth < 0.04) return;
-    const wo = Math2.wo(face, fi);
-    const animAng = wl.blindSpd > 0 ? Math.sin(State.t * wl.blindSpd * 0.05) * 45 : 0;
-    const totalAng = Math.min(89, Math.max(0, wl.blindAng + animAng));
-    const rad = totalAng * Math.PI / 180;
-    const isH = (face===0||face===2);
-    let fx, fy, fw, fh;
-    if (face===0) { fx=r0.x+wo.ox; fy=r0.y+wo.oy; fw=r0.w; fh=Math.max(4,r0.h*0.18*depth); }
-    else if (face===1) { fx=r0.x+r0.w+wo.ox; fy=r0.y+wo.oy; fw=Math.max(4,r0.w*0.18*depth); fh=r0.h; }
-    else if (face===2) { fx=r0.x+wo.ox; fy=r0.y+r0.h+wo.oy-Math.max(4,r0.h*0.18*depth); fw=r0.w; fh=Math.max(4,r0.h*0.18*depth); }
-    else { fx=r0.x+wo.ox; fy=r0.y+wo.oy; fw=Math.max(4,r0.w*0.18*depth); fh=r0.h; }
-    const slatPx = Math.max(2, wl.blindW * depth * 0.7);
-    const count  = Math.ceil((isH ? fw : fh) / slatPx) + 2;
-    const alpha  = Math.min(0.92, depth * 1.1);
-    const bwm    = State.bwMode;
-    const sf = bwm ? `rgba(0,0,0,${(alpha*0.65).toFixed(2)})` : `rgba(255,255,255,${(alpha*0.65).toFixed(2)})`;
-    const ss = `rgba(0,0,0,${(alpha*0.45).toFixed(2)})`;
-    const sl = bwm ? `rgba(0,0,0,${(alpha*0.9).toFixed(2)})` : `rgba(255,255,255,${(alpha*0.9).toFixed(2)})`;
-    for (let si = 0; si < count; si++) {
-      const pos = si * slatPx;
-      const fw2 = slatPx * Math.cos(rad);
-      const fd  = slatPx * Math.sin(rad) * 0.35 * depth;
-      cx.save();
-      if (isH) {
-        const x = fx + pos;
-        if (x >= fx + fw) { cx.restore(); break; }
-        cx.beginPath(); cx.rect(x, fy, Math.min(fw2, fx+fw-x), fh); cx.fillStyle=sf; cx.fill();
-        if (fd > 0.5) { cx.beginPath(); cx.rect(x+fw2, fy, Math.min(fd, fx+fw-x-fw2), fh); cx.fillStyle=ss; cx.fill(); }
-        cx.beginPath(); cx.moveTo(x,fy); cx.lineTo(x,fy+fh); cx.strokeStyle=sl; cx.lineWidth=0.6*depth; cx.stroke();
-      } else {
-        const y = fy + pos;
-        if (y >= fy + fh) { cx.restore(); break; }
-        cx.beginPath(); cx.rect(fx, y, fw, Math.min(fw2, fy+fh-y)); cx.fillStyle=sf; cx.fill();
-        if (fd > 0.5) { cx.beginPath(); cx.rect(fx, y+fw2, fw, Math.min(fd, fy+fh-y-fw2)); cx.fillStyle=ss; cx.fill(); }
-        cx.beginPath(); cx.moveTo(fx,y); cx.lineTo(fx+fw,y); cx.strokeStyle=sl; cx.lineWidth=0.6*depth; cx.stroke();
-      }
-      cx.restore();
+/* Tight ring packing */
+function rr(fi){
+  const frac=Math.pow(fi/(rings-1),0.74);
+  const ox=tiltX*W*0.10*(1-frac);
+  const oy=tiltY*H*0.07*(1-frac);
+  const hw=(W/2)*(1-frac);
+  const hh=(H/2)*(1-frac);
+  return{x:W/2+ox-hw,y:H/2+oy-hh,w:hw*2,h:hh*2,frac};
+}
+
+function facePoint(fi,gu,gv,face){
+  const r0=rr(fi),r1=rr(fi+1);
+  const wo0=wallOff(face,fi),wo1=wallOff(face,fi+1);
+  let px0,py0,px1,py1;
+  if(face===0){px0=r0.x+gu*r0.w+wo0.ox;py0=r0.y+wo0.oy;px1=r1.x+gu*r1.w+wo1.ox;py1=r1.y+wo1.oy;}
+  else if(face===1){px0=r0.x+r0.w+wo0.ox;py0=r0.y+gv*r0.h+wo0.oy;px1=r1.x+r1.w+wo1.ox;py1=r1.y+gv*r1.h+wo1.oy;}
+  else if(face===2){px0=r0.x+gu*r0.w+wo0.ox;py0=r0.y+r0.h+wo0.oy;px1=r1.x+gu*r1.w+wo1.ox;py1=r1.y+r1.h+wo1.oy;}
+  else{px0=r0.x+wo0.ox;py0=r0.y+gv*r0.h+wo0.oy;px1=r1.x+wo1.ox;py1=r1.y+gv*r1.h+wo1.oy;}
+  const bpx=(px0+px1)/2,bpy=(py0+py1)/2;
+  const u=gu*2-1,v=gv*2-1;
+  const d=tayDisplace(u,v,fi);
+  let dpx=0,dpy=0;
+  if(face===0||face===2){dpx=d.du*r0.w*0.07;dpy=d.dv*r0.h*0.05;}
+  else{dpx=d.du*r0.h*0.05;dpy=d.dv*r0.w*0.07;}
+  return{px:bpx+dpx,py:bpy+dpy,base:{px0,py0,px1,py1}};
+}
+
+function isChecker(gi,fi,face){
+  const ck=walls[face].checker;
+  if(ck<0.05)return false;
+  const ph=Math.floor(t*ck*0.06+fi*0.4);
+  return((Math.floor(gi/4)+ph+face)%2===0);
+}
+
+function drawBlinds(fi,face){
+  const wl=walls[face];
+  if(wl.blindAng<0.5&&wl.blindSpd<0.05)return;
+  const r0=rr(fi);
+  const depth=1-r0.frac;
+  if(depth<0.04)return;
+  const wo=wallOff(face,fi);
+  const animAng=(wl.blindSpd>0)?(Math.sin(t*wl.blindSpd*0.05)*45):0;
+  const totalAng=Math.min(89,Math.max(0,wl.blindAng+animAng));
+  const rad=totalAng*Math.PI/180;
+  const isH=(face===0||face===2);
+  let fx,fy,fw,fh;
+  if(face===0){fx=r0.x+wo.ox;fy=r0.y+wo.oy;fw=r0.w;fh=Math.max(4,r0.h*0.18*depth);}
+  else if(face===1){fx=r0.x+r0.w+wo.ox;fy=r0.y+wo.oy;fw=Math.max(4,r0.w*0.18*depth);fh=r0.h;}
+  else if(face===2){fx=r0.x+wo.ox;fy=r0.y+r0.h+wo.oy-Math.max(4,r0.h*0.18*depth);fw=r0.w;fh=Math.max(4,r0.h*0.18*depth);}
+  else{fx=r0.x+wo.ox;fy=r0.y+wo.oy;fw=Math.max(4,r0.w*0.18*depth);fh=r0.h;}
+  const slatPx=Math.max(2,wl.blindW*depth*0.7);
+  const count=Math.ceil((isH?fw:fh)/slatPx)+2;
+  const alpha=Math.min(0.92,depth*1.1);
+  const slatFace=bwMode?`rgba(0,0,0,${(alpha*0.65).toFixed(2)})`:`rgba(255,255,255,${(alpha*0.65).toFixed(2)})`;
+  const slatShadow=`rgba(0,0,0,${(alpha*0.45).toFixed(2)})`;
+  const slatLine=bwMode?`rgba(0,0,0,${(alpha*0.9).toFixed(2)})`:`rgba(255,255,255,${(alpha*0.9).toFixed(2)})`;
+  for(let si=0;si<count;si++){
+    const pos=si*slatPx;
+    const fw2=slatPx*Math.cos(rad);
+    const fd=slatPx*Math.sin(rad)*0.35*depth;
+    cx.save();
+    if(isH){
+      const x=fx+pos;if(x>=fx+fw)break;
+      cx.beginPath();cx.rect(x,fy,Math.min(fw2,fx+fw-x),fh);cx.fillStyle=slatFace;cx.fill();
+      if(fd>0.5){cx.beginPath();cx.rect(x+fw2,fy,Math.min(fd,fx+fw-x-fw2),fh);cx.fillStyle=slatShadow;cx.fill();}
+      cx.beginPath();cx.moveTo(x,fy);cx.lineTo(x,fy+fh);cx.strokeStyle=slatLine;cx.lineWidth=0.6*depth;cx.stroke();
+    } else {
+      const y=fy+pos;if(y>=fy+fh)break;
+      cx.beginPath();cx.rect(fx,y,fw,Math.min(fw2,fy+fh-y));cx.fillStyle=slatFace;cx.fill();
+      if(fd>0.5){cx.beginPath();cx.rect(fx,y+fw2,fw,Math.min(fd,fy+fh-y-fw2));cx.fillStyle=slatShadow;cx.fill();}
+      cx.beginPath();cx.moveTo(fx,y);cx.lineTo(fx+fw,y);cx.strokeStyle=slatLine;cx.lineWidth=0.6*depth;cx.stroke();
     }
-  },
+    cx.restore();
+  }
+}
 
-  face(fi, face, cx, W, H) {
-    const wl  = State.walls[face];
-    const r0  = Math2.rr(fi), r1 = Math2.rr(fi+1);
-    const depth = 1 - r0.frac;
-    const alpha = Math.min(0.98, depth*1.25);
-    const lw  = Math.max(0.28, 1.7*(1-r0.frac)*State.meshW);
-    const wo0 = Math2.wo(face, fi);
-    const wo1 = Math2.wo(face, fi+1);
+function col(alpha,dim,bright){
+  const a=Math.max(0,Math.min(1,alpha*(dim?0.13:bright?1.0:0.88))).toFixed(2);
+  return bwMode?`rgba(0,0,0,${a})`:`rgba(255,255,255,${a})`;
+}
 
-    /* Bevel shadow */
-    if (wl.bevel > 0.01 && wl.shadow > 0.01 && (Math.abs(wo0.ox)+Math.abs(wo0.oy)) > 0.5) {
-      const bw2 = wl.bevel * 20 * depth;
-      const sa  = wl.shadow * 0.78 * depth;
-      let sx, sy, ex, ey;
-      if (face===0) { sx=r0.x+wo0.ox; sy=r0.y+wo0.oy; ex=r0.x+r0.w+wo0.ox; ey=sy; }
-      else if (face===1) { sx=r0.x+r0.w+wo0.ox; sy=r0.y+wo0.oy; ex=sx; ey=r0.y+r0.h+wo0.oy; }
-      else if (face===2) { sx=r0.x+wo0.ox; sy=r0.y+r0.h+wo0.oy; ex=r0.x+r0.w+wo0.ox; ey=sy; }
-      else { sx=r0.x+wo0.ox; sy=r0.y+wo0.oy; ex=sx; ey=r0.y+r0.h+wo0.oy; }
-      const nx = -(ey-sy), ny = ex-sx;
-      const len = Math.sqrt(nx*nx + ny*ny) || 1;
-      const ndx = nx/len*bw2, ndy = ny/len*bw2;
-      cx.save();
-      cx.beginPath(); cx.moveTo(sx,sy); cx.lineTo(ex,ey); cx.lineTo(ex+ndx,ey+ndy); cx.lineTo(sx+ndx,sy+ndy); cx.closePath();
-      const g = cx.createLinearGradient(sx,sy,sx+ndx,sy+ndy);
-      g.addColorStop(0, `rgba(0,0,0,${sa.toFixed(2)})`);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      cx.fillStyle = g; cx.fill();
-      const hiC = State.bwMode ? `rgba(0,0,0,${(sa*0.28).toFixed(2)})` : `rgba(255,255,255,${(sa*0.38).toFixed(2)})`;
-      cx.beginPath(); cx.moveTo(sx,sy); cx.lineTo(ex,ey); cx.strokeStyle=hiC; cx.lineWidth=lw*1.25; cx.stroke();
-      cx.restore();
+function drawFace(fi,face){
+  const wl=walls[face];
+  const r0=rr(fi),r1=rr(fi+1);
+  const depth=1-r0.frac;
+  const alpha=Math.min(0.98,depth*1.25);
+  const lw=Math.max(0.28,1.7*(1-r0.frac)*meshW);
+  const wo0=wallOff(face,fi);
+  const hasShift=Math.abs(wo0.ox)+Math.abs(wo0.oy)>0.5;
+
+  /* Bevel shadow */
+  if(wl.bevel>0.01&&wl.shadow>0.01&&hasShift){
+    const bw2=wl.bevel*20*depth;
+    const sa=wl.shadow*0.78*depth;
+    let sx,sy,ex,ey;
+    if(face===0){sx=r0.x+wo0.ox;sy=r0.y+wo0.oy;ex=r0.x+r0.w+wo0.ox;ey=sy;}
+    else if(face===1){sx=r0.x+r0.w+wo0.ox;sy=r0.y+wo0.oy;ex=sx;ey=r0.y+r0.h+wo0.oy;}
+    else if(face===2){sx=r0.x+wo0.ox;sy=r0.y+r0.h+wo0.oy;ex=r0.x+r0.w+wo0.ox;ey=sy;}
+    else{sx=r0.x+wo0.ox;sy=r0.y+wo0.oy;ex=sx;ey=r0.y+r0.h+wo0.oy;}
+    const nx=-(ey-sy),ny=(ex-sx),len=Math.sqrt(nx*nx+ny*ny)||1;
+    const ndx=nx/len*bw2,ndy=ny/len*bw2;
+    cx.save();
+    cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(ex,ey);cx.lineTo(ex+ndx,ey+ndy);cx.lineTo(sx+ndx,sy+ndy);cx.closePath();
+    const g=cx.createLinearGradient(sx,sy,sx+ndx,sy+ndy);
+    g.addColorStop(0,`rgba(0,0,0,${sa.toFixed(2)})`);g.addColorStop(1,'rgba(0,0,0,0)');
+    cx.fillStyle=g;cx.fill();
+    const hiC=bwMode?`rgba(0,0,0,${(sa*0.28).toFixed(2)})`:`rgba(255,255,255,${(sa*0.38).toFixed(2)})`;
+    cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(ex,ey);cx.strokeStyle=hiC;cx.lineWidth=lw*1.25;cx.stroke();
+    cx.restore();
+  }
+
+  /* Depth reference lines (dim) */
+  for(let gi=0;gi<=gridN;gi++){
+    const gu=gi/gridN;
+    const wo1=wallOff(face,fi+1);
+    let ax,ay,bx2,by;
+    if(face===0){ax=r0.x+gu*r0.w+wo0.ox;ay=r0.y+wo0.oy;bx2=r1.x+gu*r1.w+wo1.ox;by=r1.y+wo1.oy;}
+    else if(face===1){ax=r0.x+r0.w+wo0.ox;ay=r0.y+gu*r0.h+wo0.oy;bx2=r1.x+r1.w+wo1.ox;by=r1.y+gu*r1.h+wo1.oy;}
+    else if(face===2){ax=r0.x+gu*r0.w+wo0.ox;ay=r0.y+r0.h+wo0.oy;bx2=r1.x+gu*r1.w+wo1.ox;by=r1.y+r1.h+wo1.oy;}
+    else{ax=r0.x+wo0.ox;ay=r0.y+gu*r0.h+wo0.oy;bx2=r1.x+wo1.ox;by=r1.y+gu*r1.h+wo1.oy;}
+    cx.beginPath();cx.moveTo(ax,ay);cx.lineTo(bx2,by);
+    cx.strokeStyle=col(alpha,true,false);cx.lineWidth=lw*0.32;cx.stroke();
+  }
+
+  /* Taylor math lines */
+  for(let gi=0;gi<=gridN;gi++){
+    const gv=gi/gridN;
+    const p0b=facePoint(fi,0,gv,face),p1b=facePoint(fi,1,gv,face);
+    cx.beginPath();cx.moveTo(p0b.base.px0,p0b.base.py0);cx.lineTo(p1b.base.px0,p1b.base.py0);
+    cx.strokeStyle=col(alpha,true,false);cx.lineWidth=lw*0.32;cx.stroke();
+    const ck=isChecker(gi,fi,face);
+    const segs=Math.max(4,Math.floor(12*(1-r0.frac*0.6)));
+    cx.beginPath();
+    let first=true;
+    for(let si=0;si<=segs;si++){
+      const p=facePoint(fi,si/segs,gv,face);
+      if(first){cx.moveTo(p.px,p.py);first=false;}
+      else cx.lineTo(p.px,p.py);
     }
-
-    /* Depth reference lines */
-    for (let gi = 0; gi <= State.gridN; gi++) {
-      const gu = gi / State.gridN;
-      let ax, ay, bx, by;
-      if (face===0) { ax=r0.x+gu*r0.w+wo0.ox; ay=r0.y+wo0.oy; bx=r1.x+gu*r1.w+wo1.ox; by=r1.y+wo1.oy; }
-      else if (face===1) { ax=r0.x+r0.w+wo0.ox; ay=r0.y+gu*r0.h+wo0.oy; bx=r1.x+r1.w+wo1.ox; by=r1.y+gu*r1.h+wo1.oy; }
-      else if (face===2) { ax=r0.x+gu*r0.w+wo0.ox; ay=r0.y+r0.h+wo0.oy; bx=r1.x+gu*r1.w+wo1.ox; by=r1.y+r1.h+wo1.oy; }
-      else { ax=r0.x+wo0.ox; ay=r0.y+gu*r0.h+wo0.oy; bx=r1.x+wo1.ox; by=r1.y+gu*r1.h+wo1.oy; }
-      cx.beginPath(); cx.moveTo(ax,ay); cx.lineTo(bx,by);
-      cx.strokeStyle = this.col(alpha,true,false); cx.lineWidth = lw*0.32; cx.stroke();
-    }
-
-    /* Taylor-displaced lines */
-    const segs = Math.max(4, Math.floor(12*(1-r0.frac*0.6)));
-    for (let gi = 0; gi <= State.gridN; gi++) {
-      const gv = gi / State.gridN;
-      const p0b = Math2.facePoint(fi, 0, gv, face, W, H);
-      const p1b = Math2.facePoint(fi, 1, gv, face, W, H);
-      cx.beginPath(); cx.moveTo(p0b.base.px0, p0b.base.py0); cx.lineTo(p1b.base.px0, p1b.base.py0);
-      cx.strokeStyle = this.col(alpha,true,false); cx.lineWidth = lw*0.32; cx.stroke();
-      const ck = this.isChecker(gi, fi, face);
-      cx.beginPath();
-      let first = true;
-      for (let si = 0; si <= segs; si++) {
-        const p = Math2.facePoint(fi, si/segs, gv, face, W, H);
-        if (first) { cx.moveTo(p.px,p.py); first=false; } else cx.lineTo(p.px,p.py);
-      }
-      cx.strokeStyle = this.col(alpha, false, ck && wl.checker > 0.5);
-      cx.lineWidth   = lw * (ck && wl.checker > 0.5 ? 1.6 : 1.0);
-      cx.stroke();
-    }
-
-    /* Morph vectors — every 5th ring, 3×3 */
-    if (fi % 5 === 0 && depth > 0.22) {
-      for (let ai = 1; ai < 3; ai++) {
-        for (let aj = 1; aj < 3; aj++) {
-          const u2 = ai/3*2-1, v2 = aj/3*2-1;
-          const em = Math2.euclidMorph(u2, v2, State.t);
-          const du = em.u-u2, dv = em.v-v2;
-          const mag = Math.sqrt(du*du + dv*dv);
-          if (mag < 0.001) continue;
-          const pt = Math2.facePoint(fi, ai/3, aj/3, face, W, H);
-          const sc = r0.w * 0.042 * depth;
-          const tx = (face===0||face===2) ? du*sc : du*sc*0.5;
-          const ty = (face===0||face===2) ? dv*sc*0.5 : dv*sc;
-          const nm = Math.min(1, mag*1.4);
-          cx.beginPath(); cx.moveTo(pt.px,pt.py); cx.lineTo(pt.px+tx,pt.py+ty);
-          cx.strokeStyle = this.col(alpha*nm,false,false); cx.lineWidth = Math.max(0.35,lw*0.5); cx.stroke();
-          cx.beginPath(); cx.arc(pt.px+tx, pt.py+ty, Math.max(0.6,lw*0.4), 0, Math.PI*2);
-          cx.fillStyle = this.col(alpha*nm*0.6,false,false); cx.fill();
-        }
-      }
-    }
-
-    this.blinds(fi, face, cx, W, H);
-  },
-
-  ringPerim(fi, cx) {
-    const r0 = Math2.rr(fi);
-    const depth = 1-r0.frac, alpha = Math.min(0.98,depth*1.25);
-    const wo0=Math2.wo(0,fi), wo1=Math2.wo(1,fi), wo2=Math2.wo(2,fi), wo3=Math2.wo(3,fi);
-    const tl={x:r0.x+wo3.ox, y:r0.y+wo0.oy};
-    const tr={x:r0.x+r0.w+wo1.ox, y:r0.y+wo0.oy};
-    const br={x:r0.x+r0.w+wo1.ox, y:r0.y+r0.h+wo2.oy};
-    const bl={x:r0.x+wo3.ox, y:r0.y+r0.h+wo2.oy};
-    cx.beginPath(); cx.moveTo(tl.x,tl.y); cx.lineTo(tr.x,tr.y); cx.lineTo(br.x,br.y); cx.lineTo(bl.x,bl.y); cx.closePath();
-    cx.strokeStyle = State.bwMode ? `rgba(0,0,0,${(alpha*0.88).toFixed(2)})` : `rgba(255,255,255,${(alpha*0.88).toFixed(2)})`;
-    cx.lineWidth   = Math.max(0.35, 1.9*(1-r0.frac));
+    cx.strokeStyle=col(alpha,false,ck&&wl.checker>0.05);
+    cx.lineWidth=lw*(ck&&wl.checker>0.05?1.6:1.0);
     cx.stroke();
   }
-};
 
-/* ── PRESETS ── */
-const PRESETS = [
-  { name:'OPEN CHAOS',       tayN:3,  gridN:14, rings:32, morph:1.00, spd:20.0, meshW:1.00, modeIdx:0, walls:[{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}] },
-  { name:'DEFAULT',           tayN:3,  gridN:14, rings:32, morph:0.40, spd:4.0,  meshW:0.85, modeIdx:0, walls:[{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}] },
-  { name:'BEVEL STAGGER',     tayN:5,  gridN:12, rings:28, morph:0.65, spd:3.0,  meshW:0.75, modeIdx:2, walls:[{shift:0.35,bevel:1.5,shadow:1.2,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:-0.2,bevel:1.0,shadow:0.8,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0.2,bevel:1.2,shadow:1.0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:-0.35,bevel:1.5,shadow:1.2,blindAng:0,blindSpd:0,blindW:8,checker:0}] },
-  { name:'BLIND STORM',       tayN:4,  gridN:10, rings:24, morph:0.5,  spd:5.0,  meshW:0.7,  modeIdx:0, walls:[{shift:0,bevel:0,shadow:0,blindAng:55,blindSpd:6,blindW:18,checker:0},{shift:0,bevel:0,shadow:0,blindAng:40,blindSpd:4,blindW:14,checker:0},{shift:0,bevel:0,shadow:0,blindAng:60,blindSpd:8,blindW:20,checker:0},{shift:0,bevel:0,shadow:0,blindAng:45,blindSpd:5,blindW:16,checker:0}] },
-  { name:'CHECKER PULSE',     tayN:3,  gridN:16, rings:30, morph:0.3,  spd:6.0,  meshW:0.9,  modeIdx:1, walls:[{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:8},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:6},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:10},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:7}] },
-  { name:'INVERSION VORTEX',  tayN:7,  gridN:8,  rings:26, morph:0.85, spd:3.5,  meshW:0.6,  modeIdx:3, walls:[{shift:0.5,bevel:2.0,shadow:1.5,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:-0.5,bevel:2.0,shadow:1.5,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0.3,bevel:1.5,shadow:1.0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:-0.3,bevel:1.5,shadow:1.0,blindAng:0,blindSpd:0,blindW:8,checker:0}] },
-  { name:'SPIRAL WEAVE',      tayN:6,  gridN:18, rings:36, morph:0.55, spd:2.5,  meshW:0.5,  modeIdx:4, walls:[{shift:0.15,bevel:0.5,shadow:0.4,blindAng:30,blindSpd:3,blindW:12,checker:4},{shift:-0.15,bevel:0.5,shadow:0.4,blindAng:25,blindSpd:2,blindW:10,checker:3},{shift:0.1,bevel:0.3,shadow:0.3,blindAng:35,blindSpd:4,blindW:14,checker:5},{shift:-0.1,bevel:0.3,shadow:0.3,blindAng:28,blindSpd:3,blindW:11,checker:4}] },
-  { name:'SHEAR GRID',        tayN:2,  gridN:20, rings:40, morph:0.7,  spd:7.0,  meshW:0.95, modeIdx:2, walls:[{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:12},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:12},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:12},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:12}] },
-  { name:'DEEP FOLD',         tayN:9,  gridN:6,  rings:20, morph:0.95, spd:2.0,  meshW:0.4,  modeIdx:0, walls:[{shift:0.7,bevel:3.0,shadow:2.0,blindAng:70,blindSpd:0,blindW:30,checker:0},{shift:-0.7,bevel:3.0,shadow:2.0,blindAng:70,blindSpd:0,blindW:30,checker:0},{shift:0.5,bevel:2.5,shadow:1.8,blindAng:60,blindSpd:0,blindW:25,checker:0},{shift:-0.5,bevel:2.5,shadow:1.8,blindAng:60,blindSpd:0,blindW:25,checker:0}] },
-  { name:'REFLECTION GHOST',  tayN:4,  gridN:14, rings:32, morph:0.45, spd:4.0,  meshW:0.3,  modeIdx:1, walls:[{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}] },
-  { name:'CORRIDOR SHIFT',    tayN:7,  gridN:14, rings:32, morph:0.40, spd:4.8,  meshW:0.85, modeIdx:0, walls:[{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:1.8,bevel:3.8,shadow:1.7,blindAng:38,blindSpd:11,blindW:29,checker:19},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0},{shift:0,bevel:0,shadow:0,blindAng:0,blindSpd:0,blindW:8,checker:0}] },
-  { name:'FULL CHAOS',        tayN:8,  gridN:10, rings:28, morph:0.8,  spd:9.0,  meshW:0.65, modeIdx:4, walls:[{shift:0.4,bevel:1.8,shadow:1.4,blindAng:45,blindSpd:12,blindW:22,checker:9},{shift:-0.3,bevel:1.2,shadow:0.9,blindAng:60,blindSpd:8,blindW:16,checker:6},{shift:0.25,bevel:1.5,shadow:1.1,blindAng:50,blindSpd:10,blindW:18,checker:7},{shift:-0.4,bevel:2.0,shadow:1.6,blindAng:40,blindSpd:14,blindW:20,checker:8}] }
-];
-let currentPreset = 0; // 0 = OPEN CHAOS
-
-/* ── ENGINE ── */
-const Engine = {
-  canvas: null, cx: null, W: 0, H: 0,
-
-  init(canvas) {
-    this.canvas = canvas;
-    this.cx = canvas.getContext('2d');
-    this.loop();
-  },
-
-  loop() {
-    this.resize();
-    this.rebuildCaches();
-    const cx = this.cx, W = this.W, H = this.H;
-    const s = State;
-
-    // Clear — solid fill, no transparency bleed
-    cx.fillStyle = s.bwMode ? '#fff' : '#000';
-    cx.fillRect(0, 0, W, H);
-
-    if (s.animating) s.t += 0.013 * s.spdMult;
-    s.tiltX += (s.tTX - s.tiltX) * 0.07;
-    s.tiltY += (s.tTY - s.tiltY) * 0.07;
-
-    for (let fi = s.rings-2; fi >= 0; fi--) {
-      for (let face = 0; face < 4; face++) Draw.face(fi, face, cx, W, H);
-      Draw.ringPerim(fi, cx);
-    }
-    // Innermost rect
-    const inner = Math2.rr(s.rings-1);
-    cx.beginPath(); cx.rect(inner.x, inner.y, inner.w, inner.h);
-    cx.strokeStyle = s.bwMode ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-    cx.lineWidth = 0.5; cx.stroke();
-
-    this.updateHUD();
-    requestAnimationFrame(() => this.loop());
-  },
-
-  resize() {
-    const cv = this.canvas;
-    this.W = cv.width  = cv.offsetWidth  || window.innerWidth;
-    this.H = cv.height = cv.offsetHeight || window.innerHeight;
-  },
-
-  rebuildCaches() {
-    const { W, H } = this;
-    const s = State;
-    const needRR = !Cache.rrValid || Cache.lastRings!==s.rings || Cache.lastW!==W || Cache.lastH!==H || Math.abs(s.tiltX-Cache.lastTX)>0.001 || Math.abs(s.tiltY-Cache.lastTY)>0.001;
-    if (needRR) { Cache.buildRR(W, H); Cache.invalidateWO(); }
-    if (!Cache.woValid) Cache.buildWO(W, H);
-  },
-
-  updateHUD() {
-    const s = State;
-    document.getElementById('hT').textContent    = s.t.toFixed(1);
-    document.getElementById('hOrd').textContent  = s.tayN;
-    const em = Math2.euclidMorph(Math.cos(s.t*0.3), Math.sin(s.t*0.25), s.t);
-    document.getElementById('hOct').textContent  = (em.u>=0?'+':'-')+(em.v>=0?'+':'-')+(s.tayN%2===0?'+':'-');
-    document.getElementById('hE').textContent    = (s.meshW*(1-s.morph*0.3)).toFixed(2);
-  },
-
-  nextMode() {
-    State.modeIdx = (State.modeIdx+1) % MODES.length;
-    document.getElementById('bMode').textContent = MODES[State.modeIdx];
-  },
-
-  toggleAnim() {
-    State.animating = !State.animating;
-    document.getElementById('btnAnim').textContent = State.animating ? 'PAUSE' : 'PLAY';
-  },
-
-  applyPreset(idx) {
-    const p = PRESETS[idx];
-    State.tayN = p.tayN; State.gridN = p.gridN; State.rings = p.rings;
-    State.morph = p.morph; State.spd = p.spd; State.meshW = p.meshW; State.modeIdx = p.modeIdx;
-    for (let i=0; i<4; i++) {
-      const w = p.walls[i], sw = State.walls[i];
-      sw.shift=w.shift; sw.bevel=w.bevel; sw.shadow=w.shadow;
-      sw.blindAng=w.blindAng; sw.blindSpd=w.blindSpd; sw.blindW=w.blindW; sw.checker=w.checker;
-    }
-    Cache.invalidateAll();
-    document.getElementById('presetName').textContent = p.name;
-    UI.syncAll();
-  },
-
-  randomPreset() {
-    currentPreset = Math.floor(Math.random() * PRESETS.length);
-    this.applyPreset(currentPreset);
-  },
-  nextPreset() { currentPreset = (currentPreset+1) % PRESETS.length; this.applyPreset(currentPreset); },
-  prevPreset() { currentPreset = (currentPreset+PRESETS.length-1) % PRESETS.length; this.applyPreset(currentPreset); },
-
-  resetAll() {
-    currentPreset = 0;
-    State.t = 0; State.tTX = 0.15; State.tTY = -0.08; State.spdMult = 1.0;
-    this.applyPreset(0);
-    document.getElementById('sAnimSpd').value = '1.0';
-    document.getElementById('vAnimSpd').textContent = '1.0×';
-    if (!State.animating) this.toggleAnim();
-  }
-};
-
-/* ── UI ── */
-const UI = {
-  activeTab: 'core',
-
-  /* Single bind function — no patching, no fragile wrapping */
-  bind(id, setter, valId, display) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.oninput = () => {
-      const v = parseFloat(el.value);
-      setter(v);
-      const vel = document.getElementById(valId);
-      if (vel) vel.textContent = display ? display(v) : v;
-    };
-  },
-
-  bindWall(w, wi) {
-    const inv = (sid, key, vid, toEng, disp) => {
-      const el = document.getElementById(sid);
-      if (!el) return;
-      el.oninput = () => {
-        const v = parseInt(el.value);
-        State.walls[wi][key] = toEng(v);
-        Cache.invalidateWO();
-        const vel = document.getElementById(vid);
-        if (vel) vel.textContent = disp(v);
-      };
-    };
-    inv(`sW${w}`,  'shift',   `vW${w}`,   v=>v/10,  v=>`${v}`);
-    inv(`sBv${w}`, 'bevel',   `vBv${w}`,  v=>v/10,  v=>`${v}`);
-    inv(`sSh${w}`, 'shadow',  `vSh${w}`,  v=>v/10,  v=>`${v}`);
-    inv(`sBl${w}`, 'blindAng',`vBl${w}`,  v=>v,     v=>`${v}°`);
-    inv(`sBs${w}`, 'blindSpd',`vBs${w}`,  v=>v,     v=>`${v}`);
-    inv(`sBw${w}`, 'blindW',  `vBw${w}`,  v=>v,     v=>`${v}`);
-    inv(`sCk${w}`, 'checker', `vCk${w}`,  v=>v,     v=>`${v}`);
-  },
-
-  initBinds() {
-    const s = State;
-    this.bind('sO',      v=>{ s.tayN=Math.round(v); Cache.invalidateAll(); },  'vO',      v=>Math.round(v));
-    this.bind('sG',      v=>{ s.gridN=Math.round(v); },                         'vG',      v=>Math.round(v));
-    this.bind('sR',      v=>{ s.rings=Math.round(v); Cache.invalidateAll(); }, 'vR',      v=>Math.round(v));
-    this.bind('sM',      v=>{ s.morph=v; },                                     'vM',      v=>v.toFixed(2));
-    this.bind('sSp',     v=>{ s.spd=v; },                                       'vSp',     v=>v.toFixed(1));
-    this.bind('sMw',     v=>{ s.meshW=v; },                                     'vMw',     v=>v.toFixed(2));
-    this.bind('sAnimSpd',v=>{ s.spdMult=v; },                                   'vAnimSpd',v=>v.toFixed(1)+'×');
-    [['T',0],['R',1],['B',2],['L',3]].forEach(([w,i]) => this.bindWall(w,i));
-  },
-
-  syncWall(w, wi) {
-    const wl = State.walls[wi];
-    const set = (sid, vid, sliderVal, dispVal) => {
-      const el = document.getElementById(sid), vel = document.getElementById(vid);
-      if (el) el.value = sliderVal;
-      if (vel) vel.textContent = dispVal;
-    };
-    set(`sW${w}`, `vW${w}`,   Math.round(wl.shift*10),    `${Math.round(wl.shift*10)}`);
-    set(`sBv${w}`,`vBv${w}`,  Math.round(wl.bevel*10),    `${Math.round(wl.bevel*10)}`);
-    set(`sSh${w}`,`vSh${w}`,  Math.round(wl.shadow*10),   `${Math.round(wl.shadow*10)}`);
-    set(`sBl${w}`,`vBl${w}`,  Math.round(wl.blindAng),    `${Math.round(wl.blindAng)}°`);
-    set(`sBs${w}`,`vBs${w}`,  Math.round(wl.blindSpd),    `${Math.round(wl.blindSpd)}`);
-    set(`sBw${w}`,`vBw${w}`,  Math.round(wl.blindW),      `${Math.round(wl.blindW)}`);
-    set(`sCk${w}`,`vCk${w}`,  Math.round(wl.checker),     `${Math.round(wl.checker)}`);
-  },
-
-  syncAll() {
-    const s = State;
-    const setv = (id, val, vid, disp) => {
-      const el=document.getElementById(id), vel=document.getElementById(vid);
-      if(el) el.value=val; if(vel) vel.textContent=disp;
-    };
-    setv('sO',  s.tayN,        'vO',  s.tayN);
-    setv('sG',  s.gridN,       'vG',  s.gridN);
-    setv('sR',  s.rings,       'vR',  s.rings);
-    setv('sM',  s.morph,       'vM',  s.morph.toFixed(2));
-    setv('sSp', s.spd,         'vSp', s.spd.toFixed(1));
-    setv('sMw', s.meshW,       'vMw', s.meshW.toFixed(2));
-    document.getElementById('bMode').textContent = MODES[s.modeIdx];
-    [['T',0],['R',1],['B',2],['L',3]].forEach(([w,i]) => this.syncWall(w,i));
-  },
-
-  selectTab(id) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.ctrl-row').forEach(r => r.classList.remove('visible'));
-    document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
-    const rowMap = { core:'rowCore', top:'rowTop', rgt:'rowRgt', btm:'rowBtm', lft:'rowLft' };
-    document.getElementById(rowMap[id]).classList.add('visible');
-    this.activeTab = id;
-  },
-
-  /* Single applyTheme — no dual definitions */
-  applyTheme() {
-    const dark = !State.bwMode;
-    const panelBg = dark ? 'rgba(0,0,0,0.9)'  : 'rgba(255,255,255,0.97)';
-    const hdrBg   = dark ? 'rgba(0,0,0,0.88)' : 'rgba(255,255,255,0.97)';
-    const bor      = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.14)';
-    const wc       = dark ? '#fff' : '#000';
-    const wcd      = dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)';
-
-    document.getElementById('header').style.cssText    += `;background:${hdrBg};border-bottom-color:${bor}`;
-    document.getElementById('ctrlPanel').style.background = panelBg;
-    document.getElementById('ctrlPanel').style.borderTopColor = bor;
-    document.getElementById('animBar').style.background = dark ? 'rgba(0,0,0,0.88)' : 'rgba(255,255,255,0.97)';
-    document.getElementById('animBar').style.borderTopColor = bor;
-    document.getElementById('infoOverlay').style.background = dark ? 'rgba(0,0,0,0.96)' : 'rgba(255,255,255,0.97)';
-
-    document.querySelectorAll('.wordmark').forEach(e => e.style.color = wc);
-    document.querySelectorAll('.sub,.hud,.tog-lbl,.actl').forEach(e => e.style.color = wcd);
-    document.querySelectorAll('.hud b').forEach(e => e.style.color = wc);
-    document.querySelector('.logo').style.cssText += `;border-color:${dark?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.4)'};color:${wc}`;
-    document.querySelectorAll('.btn,.mdbtn').forEach(e => { e.style.color=wc; e.style.borderColor=dark?'rgba(255,255,255,0.22)':'rgba(0,0,0,0.2)'; });
-    document.getElementById('wm').style.color = dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)';
-    document.querySelectorAll('.info-body,.info-title').forEach(e => e.style.color = wc);
-    document.getElementById('presetName').style.color = dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-
-    // Core row labels/vals — neutral color in both modes
-    document.querySelectorAll('#rowCore .cc-lbl').forEach(e => e.style.color = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)');
-    document.querySelectorAll('#rowCore .cc-val').forEach(e => e.style.color = wc);
-
-    // Toggle
-    const th = document.getElementById('togTh'), tr = document.getElementById('togTr'), lb = document.getElementById('togLbl');
-    tr.style.background = State.bwMode ? '#fff' : 'transparent';
-    th.style.background = State.bwMode ? '#000' : '#fff';
-    th.style.left       = State.bwMode ? '18px' : '2px';
-    lb.textContent      = State.bwMode ? 'W/B' : 'B/W';
-  },
-
-  toggleBW() {
-    State.bwMode = !State.bwMode;
-    this.applyTheme();
-  },
-
-  showInfo()  { document.getElementById('infoOverlay').style.display = 'flex'; },
-  hideInfo()  { document.getElementById('infoOverlay').style.display = 'none'; },
-  toggleFS()  {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-    else document.exitFullscreen?.();
-  }
-};
-
-/* ── BOOT ── */
-(function init() {
-  const cv = document.getElementById('c');
-
-  // Drag to tilt
-  cv.addEventListener('mousedown', e => { State.drag=true; State.lx=e.clientX; State.ly=e.clientY; });
-  window.addEventListener('mouseup', () => State.drag = false);
-  window.addEventListener('mousemove', e => {
-    if (!State.drag) return;
-    State.tTX += (e.clientX - State.lx) * 0.005;
-    State.tTY += (e.clientY - State.ly) * 0.004;
-    State.lx = e.clientX; State.ly = e.clientY;
-    Cache.invalidateRR();
-  });
-  cv.addEventListener('touchstart', e => { State.drag=true; State.lx=e.touches[0].clientX; State.ly=e.touches[0].clientY; }, {passive:true});
-  cv.addEventListener('touchend', () => State.drag = false);
-  cv.addEventListener('touchmove', e => {
-    if (!State.drag) return;
-    State.tTX += (e.touches[0].clientX - State.lx) * 0.005;
-    State.tTY += (e.touches[0].clientY - State.ly) * 0.004;
-    State.lx = e.touches[0].clientX; State.ly = e.touches[0].clientY;
-    Cache.invalidateRR();
-  }, {passive:true});
-
-  // B/W toggle
-  document.getElementById('bwToggle').addEventListener('click', () => UI.toggleBW());
-
-  // Binds
-  UI.initBinds();
-
-  // Start
-  Engine.init(cv);
-})();
-
-/* ════════════════════════════════════════════════════════════
-   UUON ENGINE v8 — DEPENDENCY SOCKETS & PORT MAP
-   ════════════════════════════════════════════════════════════
-   External systems connect via:
-   A) window.UUONBridge API (direct JS)
-   B) postMessage protocol (cross-origin / iframe)
-   C) WebSocket port (when hosted with uuon-clouud backend)
-
-   PORT MAP:
-   ┌─────────────────────────────────────────────────────┐
-   │ SOCKET          │ TYPE     │ DIRECTION │ PAYLOAD     │
-   ├─────────────────────────────────────────────────────┤
-   │ audio.morph     │ float    │ IN        │ 0.0–1.0     │
-   │ audio.speed     │ float    │ IN        │ 0.0–20.0    │
-   │ audio.meshW     │ float    │ IN        │ 0.05–1.0    │
-   │ audio.wall[n]   │ object   │ IN        │ wall params │
-   │ midi.cc[n]      │ float    │ IN        │ 0–127→norm  │
-   │ roblox.frame    │ buffer   │ OUT       │ ImageData   │
-   │ roblox.state    │ object   │ OUT       │ full State  │
-   │ preset.load     │ object   │ IN        │ preset obj  │
-   │ preset.save     │ object   │ OUT       │ State snap  │
-   │ theme.set       │ string   │ IN        │ 'bw'/'wb'   │
-   └─────────────────────────────────────────────────────┘
-   ════════════════════════════════════════════════════════ */
-
-const UUONBridge = {
-  version: '8.0.0',
-  connected: {},
-
-  /* ── INCOMING: set any engine parameter by path ── */
-  set(path, value) {
-    const parts = path.split('.');
-    if (parts[0] === 'core') {
-      const key = parts[1];
-      if (key === 'morph')   { State.morph   = Math.max(0, Math.min(1, value));   Cache.invalidateAll(); }
-      else if (key === 'spd')    { State.spd     = Math.max(0.1, Math.min(20, value)); }
-      else if (key === 'meshW')  { State.meshW   = Math.max(0.05, Math.min(1, value));}
-      else if (key === 'tayN')   { State.tayN    = Math.round(Math.max(0, Math.min(9, value))); Cache.invalidateAll(); }
-      else if (key === 'gridN')  { State.gridN   = Math.round(Math.max(2, Math.min(32, value))); }
-      else if (key === 'rings')  { State.rings   = Math.round(Math.max(4, Math.min(60, value))); Cache.invalidateAll(); }
-      else if (key === 'modeIdx'){ State.modeIdx = Math.round(value) % 5; }
-    } else if (parts[0] === 'wall') {
-      const wi = parseInt(parts[1]);
-      const key = parts[2];
-      if (wi >= 0 && wi < 4 && State.walls[wi][key] !== undefined) {
-        State.walls[wi][key] = value;
-        Cache.invalidateWO();
+  /* Morph vectors */
+  if(fi%4===0&&depth>0.22){
+    const nA=4;
+    for(let ai=1;ai<nA;ai++){
+      for(let aj=1;aj<nA;aj++){
+        const gu=ai/nA,gv=aj/nA,u=gu*2-1,v=gv*2-1;
+        const{u:eu,v:ev}=euclidMorph(u,v,t);
+        const du=eu-u,dv=ev-v,mag=Math.sqrt(du*du+dv*dv);
+        if(mag<0.001)continue;
+        const p=facePoint(fi,gu,gv,face);
+        const sc=r0.w*0.042*depth;
+        let tx=0,ty=0;
+        if(face===0||face===2){tx=du*sc;ty=dv*sc*0.5;}
+        else{tx=du*sc*0.5;ty=dv*sc;}
+        const nm=Math.min(1,mag*1.4);
+        cx.beginPath();cx.moveTo(p.px,p.py);cx.lineTo(p.px+tx,p.py+ty);
+        cx.strokeStyle=col(alpha*nm,false,false);cx.lineWidth=Math.max(0.35,lw*0.5);cx.stroke();
+        cx.beginPath();cx.arc(p.px+tx,p.py+ty,Math.max(0.6,lw*0.4),0,Math.PI*2);
+        cx.fillStyle=col(alpha*nm*0.6,false,false);cx.fill();
       }
-    } else if (parts[0] === 'anim') {
-      if (parts[1] === 'speed') State.spdMult = Math.max(0.1, Math.min(4, value));
-      else if (parts[1] === 'play')  { if (!State.animating) Engine.toggleAnim(); }
-      else if (parts[1] === 'pause') { if (State.animating)  Engine.toggleAnim(); }
-    } else if (parts[0] === 'theme') {
-      if (value === 'bw' && !State.bwMode)  UI.toggleBW();
-      if (value === 'wb' &&  State.bwMode)  UI.toggleBW();
     }
-    UI.syncAll();
-  },
-
-  /* ── INCOMING: load a full preset object ── */
-  loadPreset(preset) {
-    Engine.applyPreset(PRESETS.findIndex(p => p.name === preset) >= 0
-      ? PRESETS.findIndex(p => p.name === preset)
-      : (() => { PRESETS.push(preset); return PRESETS.length-1; })());
-  },
-
-  /* ── OUTGOING: get current full state snapshot ── */
-  getState() {
-    return {
-      t: State.t,
-      core: { tayN: State.tayN, gridN: State.gridN, rings: State.rings,
-              morph: State.morph, spd: State.spd, meshW: State.meshW,
-              modeIdx: State.modeIdx, spdMult: State.spdMult },
-      walls: State.walls.map(w => ({...w})),
-      bwMode: State.bwMode,
-      animating: State.animating
-    };
-  },
-
-  /* ── OUTGOING: capture current canvas frame as ImageData ── */
-  getFrame() {
-    const cv = Engine.canvas;
-    return Engine.cx.getImageData(0, 0, cv.width, cv.height);
-  },
-
-  /* ── OUTGOING: capture frame as base64 PNG (for Roblox/remote) ── */
-  getFramePNG(scale=0.5) {
-    const src = Engine.canvas;
-    const tmp = document.createElement('canvas');
-    tmp.width  = Math.round(src.width  * scale);
-    tmp.height = Math.round(src.height * scale);
-    tmp.getContext('2d').drawImage(src, 0, 0, tmp.width, tmp.height);
-    return tmp.toDataURL('image/png');
-  },
-
-  /* ── AUDIO port: feed normalised float array [morph,speed,meshW] ── */
-  audioIn(band) {
-    // band: Float32Array or array of [morph, speed, meshW, ...wall params]
-    if (band[0] !== undefined) this.set('core.morph', band[0]);
-    if (band[1] !== undefined) this.set('core.spd',   band[1] * 20);
-    if (band[2] !== undefined) this.set('core.meshW', band[2]);
-  },
-
-  /* ── MIDI CC port: cc[n] → mapped parameter ── */
-  midiCC: {
-    1:  'core.morph',    // mod wheel → morph
-    7:  'core.meshW',    // volume → mesh weight
-    74: 'core.spd',      // filter cutoff → flow speed
-    // walls: CC 20-27 → wall[0-3] shift
-    20: 'wall.0.shift', 21: 'wall.1.shift',
-    22: 'wall.2.shift', 23: 'wall.3.shift',
-    24: 'wall.0.bevel', 25: 'wall.1.bevel',
-    26: 'wall.2.bevel', 27: 'wall.3.bevel',
-  },
-  midiIn(cc, value127) {
-    const path = this.midiCC[cc];
-    if (!path) return;
-    const norm = value127 / 127;
-    if (path === 'core.spd') this.set(path, norm * 20);
-    else this.set(path, norm);
-  },
-
-  /* ── WebSocket connection (uuon-clouud backend) ── */
-  ws: null,
-  connectWS(url='ws://localhost:3001/engine') {
-    this.ws = new WebSocket(url);
-    this.ws.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'set')         this.set(msg.path, msg.value);
-        else if (msg.type === 'preset') this.loadPreset(msg.preset);
-        else if (msg.type === 'ping')   this.ws.send(JSON.stringify({type:'pong', state: this.getState()}));
-      } catch(err) { console.warn('[UUONBridge] WS parse error', err); }
-    };
-    this.ws.onopen = () => {
-      console.log('[UUONBridge] WS connected to', url);
-      this.connected.ws = true;
-    };
-    this.ws.onclose = () => { this.connected.ws = false; };
-    return this.ws;
-  },
-
-  /* ── postMessage listener (iframe / cross-origin) ── */
-  initPostMessage() {
-    window.addEventListener('message', (e) => {
-      const msg = e.data;
-      if (!msg || msg.namespace !== 'UUON') return;
-      if (msg.type === 'set')         this.set(msg.path, msg.value);
-      else if (msg.type === 'preset') this.loadPreset(msg.preset);
-      else if (msg.type === 'get')    e.source?.postMessage({ namespace:'UUON', type:'state', state: this.getState() }, '*');
-      else if (msg.type === 'frame')  e.source?.postMessage({ namespace:'UUON', type:'frame', png: this.getFramePNG(msg.scale||0.5) }, '*');
-    });
-    this.connected.postMessage = true;
-    console.log('[UUONBridge] postMessage port open');
-  },
-
-  /* ── Roblox frame pump: call this to start pushing frames ── */
-  _robloxPump: null,
-  startRobloxPump(targetFn, fps=12, scale=0.25) {
-    // targetFn receives base64 PNG string each tick
-    const interval = 1000 / fps;
-    this._robloxPump = setInterval(() => {
-      targetFn(this.getFramePNG(scale));
-    }, interval);
-    console.log('[UUONBridge] Roblox pump started @', fps, 'fps, scale', scale);
-  },
-  stopRobloxPump() {
-    clearInterval(this._robloxPump);
-    this._robloxPump = null;
   }
-};
 
-/* Expose to window */
-window.UUONBridge = UUONBridge;
-window.UUONState  = State;
-window.UUONEngine = Engine;
+  drawBlinds(fi,face);
+}
 
-/* Auto-init postMessage port */
-UUONBridge.initPostMessage();
+function drawRingPerim(fi){
+  const r0=rr(fi);
+  const depth=1-r0.frac;
+  const alpha=Math.min(0.98,depth*1.25);
+  const wo0=wallOff(0,fi),wo1=wallOff(1,fi),wo2=wallOff(2,fi),wo3=wallOff(3,fi);
+  const tl={x:r0.x+wo3.ox,      y:r0.y+wo0.oy};
+  const tr={x:r0.x+r0.w+wo1.ox, y:r0.y+wo0.oy};
+  const br={x:r0.x+r0.w+wo1.ox, y:r0.y+r0.h+wo2.oy};
+  const bl={x:r0.x+wo3.ox,      y:r0.y+r0.h+wo2.oy};
+  cx.beginPath();cx.moveTo(tl.x,tl.y);cx.lineTo(tr.x,tr.y);cx.lineTo(br.x,br.y);cx.lineTo(bl.x,bl.y);cx.closePath();
+  cx.strokeStyle=bwMode?`rgba(0,0,0,${(alpha*0.88).toFixed(2)})`:`rgba(255,255,255,${(alpha*0.88).toFixed(2)})`;
+  cx.lineWidth=Math.max(0.35,1.9*(1-r0.frac));
+  cx.stroke();
+}
 
-console.log('%c[UUON] Taylor-Euclid-∞ Engine v8 ready', 'color:#00e5ff;font-weight:bold');
-console.log('[UUON] Bridge API: window.UUONBridge');
-console.log('[UUON] Port map: UUONBridge.midiCC, UUONBridge.connectWS()');
+function frame(){
+  rsz();
+  cx.fillStyle=bwMode?'#fff':'#000';
+  cx.fillRect(0,0,W,H);
+  t+=0.013;
+  tiltX+=(tTX-tiltX)*0.07;
+  tiltY+=(tTY-tiltY)*0.07;
 
+  for(let fi=rings-2;fi>=0;fi--){
+    for(let face=0;face<4;face++) drawFace(fi,face);
+    drawRingPerim(fi);
+  }
+
+  const inner=rr(rings-1);
+  cx.beginPath();cx.rect(inner.x,inner.y,inner.w,inner.h);
+  cx.strokeStyle=bwMode?'rgba(0,0,0,0.4)':'rgba(255,255,255,0.4)';
+  cx.lineWidth=0.5;cx.stroke();
+
+  /* HUD */
+  document.getElementById('hT').textContent=t.toFixed(1);
+  document.getElementById('hOrd').textContent=tayN;
+  const u0=Math.cos(t*0.3),v0=Math.sin(t*0.25);
+  const{u:eu,v:ev}=euclidMorph(u0,v0,t);
+  document.getElementById('hOct').textContent=(eu>=0?'+':'-')+(ev>=0?'+':'-')+(tayN%2===0?'+':'-');
+  const avgBl=walls.reduce((s,w)=>s+w.blindAng,0)/4;
+  document.getElementById('hBl').textContent=avgBl.toFixed(1)+'°';
+  document.getElementById('hE').textContent=(meshW*(1-morph*0.3)).toFixed(2);
+  requestAnimationFrame(frame);
+}
+frame();
 </script>
 </body>
 </html>
